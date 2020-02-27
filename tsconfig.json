@@ -1,12 +1,3 @@
 {
-  "compilerOptions": {
-    "module": "ES2015",
-    "noImplicitAny": true,
-    "outDir": "./build",
-    "target": "esnext"
-  },
-  "include": [
-    "**/*"
-  ],
-  "exclude": ["node_modules"]
+  "include": ["**/*"]
 }
