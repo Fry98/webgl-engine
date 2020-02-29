@@ -21,9 +21,8 @@ export default {
     ts(),
     copy({
       targets: [{
-        src: './src/public/index.html',
+        src: './src/public/*',
         dest: './dist',
-        transform: (ctn) => ctn.toString().replace('__SCRIPT__', `/js/${BUNDLE_NAME}`)
       }]
     }),
     terser()

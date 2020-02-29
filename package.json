@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "watch": "concurrently \"rollup -c -w\" \"live-server --port=8080 dist\""
+    "dev": "concurrently \"rollup -c -w\" \"live-server --port=8080 dist\""
   },
   "author": "Fry98",
   "license": "ISC",
