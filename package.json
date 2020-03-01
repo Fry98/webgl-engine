@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@types/gl-matrix": "^2.4.5",
-    "gl-matrix": "^3.2.1"
+    "gl-matrix": "^3.2.1",
+    "webgl-obj-loader": "^2.0.6"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",
