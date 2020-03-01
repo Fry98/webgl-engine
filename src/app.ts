@@ -24,78 +24,9 @@ function main(meshes: MeshMap) {
   gl.attachShader(program, fragmentShader);
   gl.linkProgram(program);
 
-  const verts = [
-    // X, Y, Z
-    // Top
-    -1.0, 1.0, -1.0,
-    -1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-    1.0, 1.0, -1.0,
-
-    // Left
-    -1.0, 1.0, 1.0,
-    -1.0, -1.0, 1.0,
-    -1.0, -1.0, -1.0,
-    -1.0, 1.0, -1.0,
-
-    // Right
-    1.0, 1.0, 1.0,
-    1.0, -1.0, 1.0,
-    1.0, -1.0, -1.0,
-    1.0, 1.0, -1.0,
-
-    // Front
-    1.0, 1.0, 1.0,
-    1.0, -1.0, 1.0,
-    -1.0, -1.0, 1.0,
-    -1.0, 1.0, 1.0,
-
-    // Back
-    1.0, 1.0, -1.0,
-    1.0, -1.0, -1.0,
-    -1.0, -1.0, -1.0,
-    -1.0, 1.0, -1.0,
-
-    // Bottom
-    -1.0, -1.0, -1.0,
-    -1.0, -1.0, 1.0,
-    1.0, -1.0, 1.0,
-    1.0, -1.0, -1.0,
-  ];
-
-  const boxIndices = [
-    // Top
-    0, 1, 2,
-    0, 2, 3,
-
-    // Left
-    5, 4, 6,
-    6, 4, 7,
-
-    // Right
-    8, 9, 10,
-    8, 10, 11,
-
-    // Front
-    13, 12, 14,
-    15, 14, 12,
-
-    // Back
-    16, 17, 18,
-    16, 18, 19,
-
-    // Bottom
-    21, 20, 22,
-    22, 20, 23
-  ];
-
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.teapot.vertices), gl.STATIC_DRAW);
-
-  const indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes.teapot.indices), gl.STATIC_DRAW);
 
   const positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
   gl.vertexAttribPointer(
@@ -108,6 +39,25 @@ function main(meshes: MeshMap) {
   );
   gl.enableVertexAttribArray(positionAttribLocation);
 
+  const normalsBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.teapot.vertexNormals), gl.STATIC_DRAW);
+
+  const normalAttribLocation = gl.getAttribLocation(program, 'vertNormal');
+  gl.vertexAttribPointer(
+    normalAttribLocation,
+    3,
+    gl.FLOAT,
+    false,
+    3 * Float32Array.BYTES_PER_ELEMENT,
+    0
+  );
+  gl.enableVertexAttribArray(normalAttribLocation);
+
+  const indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes.teapot.indices), gl.STATIC_DRAW);
+
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
@@ -119,7 +69,7 @@ function main(meshes: MeshMap) {
   const mView = new Float32Array(16);
   const mProj = new Float32Array(16);
   mat4.identity(mWorld);
-  mat4.lookAt(mView, [0, 0, -4], [0, 0, 0], [0, 1, 0]);
+  mat4.lookAt(mView, [0, 0, 6], [0.1, 0, 0], [0, 1, 0]);
   mat4.perspective(mProj, glMatrix.toRadian(70), canv.width / canv.height, 0.1, 1000);
   gl.uniformMatrix4fv(mProjLocation, false, mProj);
 
@@ -137,11 +87,11 @@ function main(meshes: MeshMap) {
     }
 
     if (KeyMap[38]) {
-      mat4.translate(mView, mView, [0, 0, -0.1]);
+      mat4.translate(mView, mView, [0, 0, 0.1]);
     }
 
     if (KeyMap[40]) {
-      mat4.translate(mView, mView, [0, 0, 0.1]);
+      mat4.translate(mView, mView, [0, 0, -0.1]);
     }
 
     if (KeyMap[87]) {
