@@ -69,7 +69,7 @@ function main(meshes: MeshMap) {
   const mView = new Float32Array(16);
   const mProj = new Float32Array(16);
   mat4.identity(mWorld);
-  mat4.lookAt(mView, [0, 0, 6], [0.1, 0, 0], [0, 1, 0]);
+  mat4.lookAt(mView, [0, 0.5, 2], [0, 0.5, 0], [0, 1, 0]);
   mat4.perspective(mProj, glMatrix.toRadian(70), canv.width / canv.height, 0.1, 1000);
   gl.uniformMatrix4fv(mProjLocation, false, mProj);
 
@@ -109,5 +109,4 @@ function main(meshes: MeshMap) {
     gl.drawElements(gl.TRIANGLES, meshes.teapot.indices.length, gl.UNSIGNED_SHORT, 0);
     requestAnimationFrame(loop);
   }
-
 }
