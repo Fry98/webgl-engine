@@ -14,8 +14,11 @@ gl.shaderSource(fragmentShader, frag);
 gl.compileShader(vertexShader);
 gl.compileShader(fragmentShader);
 
-downloadMeshes({
-  teapot: 'assets/teapot.obj'
+const texture = new Image();
+texture.src = 'assets/dog_diffuse.jpg';
+
+texture.onload = () => downloadMeshes({
+  dog: 'assets/dog.obj'
 }, main, {});
 
 function main(meshes: MeshMap) {
@@ -26,7 +29,7 @@ function main(meshes: MeshMap) {
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.teapot.vertices), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.dog.vertices), gl.STATIC_DRAW);
 
   const positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
   gl.vertexAttribPointer(
@@ -39,9 +42,24 @@ function main(meshes: MeshMap) {
   );
   gl.enableVertexAttribArray(positionAttribLocation);
 
+  const texCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.dog.textures), gl.STATIC_DRAW);
+  
+  const texCoordLocation = gl.getAttribLocation(program, 'vertTexCoord');
+  gl.vertexAttribPointer(
+    texCoordLocation,
+    2,
+    gl.FLOAT,
+    false,
+    2 * Float32Array.BYTES_PER_ELEMENT,
+    0
+  );
+  gl.enableVertexAttribArray(texCoordLocation);
+
   const normalsBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.teapot.vertexNormals), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.dog.vertexNormals), gl.STATIC_DRAW);
 
   const normalAttribLocation = gl.getAttribLocation(program, 'vertNormal');
   gl.vertexAttribPointer(
@@ -56,7 +74,20 @@ function main(meshes: MeshMap) {
 
   const indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes.teapot.indices), gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes.dog.indices), gl.STATIC_DRAW);
+
+  const dogTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, dogTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0, gl.RGBA, gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    texture
+  );
 
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
@@ -69,7 +100,7 @@ function main(meshes: MeshMap) {
   const mView = new Float32Array(16);
   const mProj = new Float32Array(16);
   mat4.identity(mWorld);
-  mat4.lookAt(mView, [0, 0.5, 2], [0, 0.5, 0], [0, 1, 0]);
+  mat4.lookAt(mView, [0, 3, 5], [0, 1.5, 0], [0, 1, 0]);
   mat4.perspective(mProj, glMatrix.toRadian(70), canv.width / canv.height, 0.1, 1000);
   gl.uniformMatrix4fv(mProjLocation, false, mProj);
 
@@ -106,7 +137,7 @@ function main(meshes: MeshMap) {
     gl.uniformMatrix4fv(mWorldLocation, false, mWorld);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.drawElements(gl.TRIANGLES, meshes.teapot.indices.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, meshes.dog.indices.length, gl.UNSIGNED_SHORT, 0);
     requestAnimationFrame(loop);
   }
 }
