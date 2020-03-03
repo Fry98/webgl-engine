@@ -45,7 +45,7 @@ function main(meshes: MeshMap) {
   const texCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes.dog.textures), gl.STATIC_DRAW);
-  
+
   const texCoordLocation = gl.getAttribLocation(program, 'vertTexCoord');
   gl.vertexAttribPointer(
     texCoordLocation,
@@ -78,6 +78,7 @@ function main(meshes: MeshMap) {
 
   const dogTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, dogTex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -135,7 +136,7 @@ function main(meshes: MeshMap) {
 
     gl.uniformMatrix4fv(mViewLocation, false, mView);
     gl.uniformMatrix4fv(mWorldLocation, false, mWorld);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearColor(0.4, 0.4, 0.45, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.drawElements(gl.TRIANGLES, meshes.dog.indices.length, gl.UNSIGNED_SHORT, 0);
     requestAnimationFrame(loop);
