@@ -1,4 +1,6 @@
-const KeyMap = {};
+const KeyMap: {
+  [K: number]: boolean
+} = {};
 
 document.addEventListener('keydown', e => {
   KeyMap[e.keyCode] = true;
