@@ -1,16 +1,19 @@
+#version 300 es
 precision mediump float;
 
-varying vec3 fragNormal;
-varying vec2 fragTexCoord;
+in vec3 fragNormal;
+in vec2 fragTexCoord;
+
+out vec4 outColor;
 
 uniform sampler2D smp;
 
 void main() {
-  vec3 ambientLight = vec3(0.15, 0.15, 0.15);
-  vec3 sunInt = vec3(0.9, 0.9, 0.9);
+  vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+  vec3 sunInt = vec3(1.0, 1.0, 1.0);
   vec3 sunDir = normalize(vec3(4.0, 1.0, 6.0));
   vec3 lightInt = ambientLight + sunInt * max(dot(fragNormal, sunDir), 0.0);
 
-  vec4 texel = texture2D(smp, fragTexCoord);
-  gl_FragColor = vec4(texel.rgb * lightInt, texel.a);
+  vec4 texel = texture(smp, fragTexCoord);
+  outColor = vec4(texel.rgb * min(lightInt, 1.0), texel.a);
 }

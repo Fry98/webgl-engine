@@ -5,7 +5,7 @@ import { mat4, glMatrix } from 'gl-matrix';
 import { downloadMeshes, MeshMap } from '../node_modules/webgl-obj-loader/src/index';
 
 const canv = document.getElementById('canv') as HTMLCanvasElement;
-const gl = canv.getContext('webgl');
+const gl = canv.getContext('webgl2');
 let vertexShader = gl.createShader(gl.VERTEX_SHADER);
 let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 
