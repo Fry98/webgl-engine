@@ -36,6 +36,10 @@ export default class Camera {
     vec3.scaleAndAdd(this.position, this.position, right, distance);
   }
 
+  moveUp(distance: number) {
+    vec3.scaleAndAdd(this.position, this.position, [0, 1, 0], distance);
+  }
+
   rotateRight(angle: number) {
     const rotMtx = mat4.create();
     mat4.rotate(rotMtx, rotMtx, -angle, [0, 1, 0]);

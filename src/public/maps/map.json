@@ -1,0 +1,46 @@
+{
+  "objects": [
+    {
+      "mesh": "terrain.obj",
+      "diffuse": "terrain.png",
+      "placement": [
+        {
+          "position": [-30, 1, -40],
+          "rotation": [-90, 0, 0],
+          "scale": [1, 1, 1]
+        }
+      ]
+    },
+    {
+      "mesh": "dog.obj",
+      "diffuse": "dog.jpg",
+      "placement": [
+        {
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "scale": [0.9, 0.9, 0.9]
+        },
+        {
+          "position": [2, 0, 0],
+          "rotation": [0, 0, 0],
+          "scale": [1, 1, 1]
+        },
+        {
+          "position": [4, 0, 0],
+          "rotation": [0, 0, 0],
+          "scale": [1.5, 1.5, 1.5]
+        },
+        {
+          "position": [6, 0, 0],
+          "rotation": [0, 0, 0],
+          "scale": [1, 1, 1]
+        },
+        {
+          "position": [8, 0, 0],
+          "rotation": [0, 0, 0],
+          "scale": [0.9, 0.9, 0.9]
+        }
+      ]
+    }
+  ]
+}
