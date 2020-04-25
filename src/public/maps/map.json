@@ -17,38 +17,18 @@
       "placement": [
         {
           "position": [0, 0, 0],
-          "rotation": [0, 0, 0],
-          "scale": [0.9, 0.9, 0.9]
-        },
-        {
-          "position": [2, 0, 0],
-          "rotation": [0, 0, 0],
+          "rotation": [0, -110, 0],
           "scale": [1, 1, 1]
-        },
-        {
-          "position": [4, 0, 0],
-          "rotation": [0, 0, 0],
-          "scale": [1.5, 1.5, 1.5]
-        },
-        {
-          "position": [6, 0, 0],
-          "rotation": [0, 0, 0],
-          "scale": [1, 1, 1]
-        },
-        {
-          "position": [8, 0, 0],
-          "rotation": [0, 0, 0],
-          "scale": [0.9, 0.9, 0.9]
         }
       ]
     }
   ],
   "skybox": [
-    "skybox/skybox_px.jpg",
-    "skybox/skybox_nx.jpg",
-    "skybox/skybox_py.jpg",
-    "skybox/skybox_ny.jpg",
-    "skybox/skybox_pz.jpg",
-    "skybox/skybox_nz.jpg"
+    "skybox/skybox_px.png",
+    "skybox/skybox_nx.png",
+    "skybox/skybox_py.png",
+    "skybox/skybox_ny.png",
+    "skybox/skybox_pz.png",
+    "skybox/skybox_nz.png"
   ]
 }
