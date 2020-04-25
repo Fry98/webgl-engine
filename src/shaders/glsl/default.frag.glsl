@@ -15,5 +15,5 @@ void main() {
   vec3 lightInt = ambientLight + sunInt * max(dot(fragNormal, sunDir), 0.0);
 
   vec4 texel = texture(smp, fragTexCoord);
-  outColor = vec4(texel.rgb * min(lightInt, 1.0), texel.a);
+  outColor = vec4(texel.rgb * lightInt, texel.a);
 }

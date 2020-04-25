@@ -42,5 +42,13 @@
         }
       ]
     }
+  ],
+  "skybox": [
+    "skybox/skybox_px.jpg",
+    "skybox/skybox_nx.jpg",
+    "skybox/skybox_py.jpg",
+    "skybox/skybox_ny.jpg",
+    "skybox/skybox_pz.jpg",
+    "skybox/skybox_nz.jpg"
   ]
 }

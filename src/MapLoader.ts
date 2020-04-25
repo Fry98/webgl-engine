@@ -1,7 +1,9 @@
 import { glMatrix } from 'gl-matrix';
 import { mat4 } from 'gl-matrix';
 import { downloadMeshes, MeshMap, Mesh } from '../node_modules/webgl-obj-loader/src/index';
-import DefaultShader from './DefaultShader';
+import DefaultShader from './shaders/DefaultShader';
+import Skybox from './Skybox';
+import SkyboxShader from './shaders/SkyboxShader';
 
 export type Map = {
   vao: WebGLVertexArrayObject,
@@ -14,19 +16,35 @@ export type Map = {
   instances: mat4[]
 }[];
 
-export default async function loadMap(gl: WebGL2RenderingContext, shader: DefaultShader, path: string) {
+export default async function loadMap(
+  gl: WebGL2RenderingContext,
+  defaultShader: DefaultShader,
+  skyboxShader: SkyboxShader,
+  path: string
+) {
   const res = await fetch(`maps/${path}`);
   const map = await res.json();
 
   const imageProms: Promise<HTMLImageElement>[] = [];
+  const skyboxProms: Promise<HTMLImageElement>[] = [];
   const mesheProms: Promise<Mesh>[] = [];
+
   for (const object of map.objects) {
     imageProms.push(loadImage(object.diffuse));
     mesheProms.push(loadMesh(object.mesh));
   }
 
-  const [images, meshes] = await Promise.all([Promise.all(imageProms), Promise.all(mesheProms)]);
+  for (const tex of map.skybox) {
+    skyboxProms.push(loadImage(tex));
+  }
+
   const objects: Map = [];
+  const [images, meshes, skybox] = await Promise.all([
+    Promise.all(imageProms),
+    Promise.all(mesheProms),
+    Promise.all(skyboxProms)
+  ]);
+
   for (let i = 0; i < images.length; i++) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -49,40 +67,40 @@ export default async function loadMap(gl: WebGL2RenderingContext, shader: Defaul
     gl.bindBuffer(gl.ARRAY_BUFFER, vertPos);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes[i].vertices), gl.STATIC_DRAW);
     gl.vertexAttribPointer(
-      shader.attrib.vertPosition,
+      defaultShader.attrib.vertPosition,
       3,
       gl.FLOAT,
       false,
       3 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
-    gl.enableVertexAttribArray(shader.attrib.vertPosition);
+    gl.enableVertexAttribArray(defaultShader.attrib.vertPosition);
 
     const texCoords = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoords);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes[i].textures), gl.STATIC_DRAW);
     gl.vertexAttribPointer(
-      shader.attrib.texCoords,
+      defaultShader.attrib.texCoords,
       2,
       gl.FLOAT,
       false,
       2 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
-    gl.enableVertexAttribArray(shader.attrib.texCoords);
+    gl.enableVertexAttribArray(defaultShader.attrib.texCoords);
 
     const vertNormals = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertNormals);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(meshes[i].vertexNormals), gl.STATIC_DRAW);
     gl.vertexAttribPointer(
-      shader.attrib.vertNormal,
+      defaultShader.attrib.vertNormal,
       3,
       gl.FLOAT,
       false,
       3 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
-    gl.enableVertexAttribArray(shader.attrib.vertNormal);
+    gl.enableVertexAttribArray(defaultShader.attrib.vertNormal);
 
     const indicies = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicies);
@@ -112,7 +130,10 @@ export default async function loadMap(gl: WebGL2RenderingContext, shader: Defaul
     });
   }
 
-  return objects;
+  return {
+    skybox: new Skybox(gl, skyboxShader, skybox),
+    objects
+  };
 }
 
 function loadImage(path: string): Promise<HTMLImageElement> {

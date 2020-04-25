@@ -1,7 +1,8 @@
-import vert from './shaders/default.vert.glsl';
-import frag from './shaders/default.frag.glsl';
+import vert from './glsl/default.vert.glsl';
+import frag from './glsl/default.frag.glsl';
+import Shader from './Shader';
 
-export default class DefaultShader {
+export default class DefaultShader extends Shader {
   program: WebGLProgram;
   attrib: {
     vertPosition: number,
@@ -14,20 +15,7 @@ export default class DefaultShader {
   }
 
   constructor(gl: WebGL2RenderingContext) {
-    let vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-    gl.shaderSource(vertexShader, vert);
-    gl.shaderSource(fragmentShader, frag);
-    gl.compileShader(vertexShader);
-    gl.compileShader(fragmentShader);
-
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    this.program = program;
+    super(gl, vert, frag);
     this.setupLocations(gl);
   }
 

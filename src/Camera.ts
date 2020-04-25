@@ -1,9 +1,9 @@
 import { vec3, mat4, glMatrix } from "gl-matrix";
 
 export default class Camera {
-  position: vec3;
-  direction = vec3.create();
-  projection = mat4.create();
+  private position: vec3;
+  private direction = vec3.create();
+  private projection = mat4.create();
 
   constructor(position: vec3, direction: vec3, fov: number) {
     this.position = position;
@@ -17,11 +17,20 @@ export default class Camera {
     );
   }
 
-  getViewProjectionMatrix(): mat4 {
+  getViewMatrix() {
     const out = mat4.create();
     const lookAt = vec3.create();
     vec3.add(lookAt, this.position, this.direction);
     mat4.lookAt(out, this.position, lookAt, [0, 1, 0]);
+    return out;
+  }
+
+  getProjectionMatrix() {
+    return this.projection;
+  }
+
+  getViewProjectionMatrix() {
+    const out = this.getViewMatrix();
     mat4.multiply(out, this.projection, out);
     return out;
   }

@@ -2,10 +2,12 @@
 import KeyMap from './Keymap';
 import Camera from './Camera';
 import viewport from './Viewport';
-import DefaultShader from './DefaultShader';
+import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
 import config from './config.json';
 import loadMap, { Map } from './MapLoader';
+import Skybox from './Skybox';
+import SkyboxShader from './shaders/SkyboxShader';
 
 // CANVAS SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
@@ -15,16 +17,20 @@ viewport(gl);
 
 // DECLARATIONS
 const defaultShader = new DefaultShader(gl);
+const skyboxShader = new SkyboxShader(gl);
 const cam = new Camera([0, 0, 0], [0, 0, 1], config.fov);
 const mouse = new MouseTracker(canv);
 let map: Map = null;
+let skybox: Skybox = null;
 main();
 
 // MAIN FUNCTION
 async function main() {
-  map = await loadMap(gl, defaultShader, 'map.json');
+  const loaded = await loadMap(gl, defaultShader, skyboxShader, 'map.json');
+  map = loaded.objects;
+  skybox = loaded.skybox;
+
   gl.enable(gl.DEPTH_TEST);
-  gl.useProgram(defaultShader.program);
   requestAnimationFrame(loop);
 }
 
@@ -80,6 +86,7 @@ function update() {
 function draw() {
   gl.clearColor(0.4, 0.4, 0.45, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(defaultShader.program);
   for (const object of map) {
     gl.bindVertexArray(object.vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
@@ -94,4 +101,7 @@ function draw() {
       gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
     }
   }
+
+  gl.useProgram(skyboxShader.program);
+  skybox.draw(cam);
 }
