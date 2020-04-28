@@ -28,7 +28,11 @@ export default {
         dest: './dist',
       }]
     }),
-    terser(),
+    terser({
+      output: {
+        comments: false
+      }
+    }),
     {
       name: 'map-watch',
       load() {
