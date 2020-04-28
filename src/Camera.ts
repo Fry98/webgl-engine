@@ -17,6 +17,10 @@ export default class Camera {
     );
   }
 
+  getPosition() {
+    return this.position;
+  }
+
   getViewMatrix() {
     const out = mat4.create();
     const lookAt = vec3.create();

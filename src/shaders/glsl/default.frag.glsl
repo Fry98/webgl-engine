@@ -6,14 +6,28 @@ in vec2 fragTexCoord;
 
 out vec4 outColor;
 
+uniform vec3 ambient;
+uniform vec3 sunInt;
+uniform vec3 sunPos;
+uniform vec3 cameraPos;
+uniform float shininess;
+uniform float specCoef;
 uniform sampler2D smp;
 
 void main() {
-  vec3 ambientLight = vec3(0.3, 0.3, 0.3);
-  vec3 sunInt = vec3(0.9, 0.9, 0.9);
-  vec3 sunDir = normalize(vec3(-5.0, 10.0, -10.0));
-  vec3 lightInt = ambientLight + sunInt * max(dot(fragNormal, sunDir), 0.0);
+  vec3 unitNormal = normalize(fragNormal);
+  vec3 unitSunPos = normalize(sunPos);
+  vec3 unitCamPos = normalize(cameraPos);
 
+  // Diffuse
+  vec3 lightInt = ambient + sunInt * max(dot(unitNormal, unitSunPos), 0.0);
   vec4 texel = texture(smp, fragTexCoord);
+  
+  // Specular
+  vec3 reflected = reflect(-unitSunPos, unitNormal);
+  float spec = pow(max(dot(reflected, unitCamPos), 0.0), shininess);
+  vec3 specular = specCoef * spec * sunInt;
+  lightInt += specular;
+
   outColor = vec4(texel.rgb * lightInt, texel.a);
 }

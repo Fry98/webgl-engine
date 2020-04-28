@@ -3,6 +3,7 @@ import ts from 'rollup-plugin-typescript2';
 import glsl from 'rollup-plugin-glsl';
 import copy from 'rollup-plugin-copy';
 import json from 'rollup-plugin-json';
+import * as path from 'path';
 import { terser } from 'rollup-plugin-terser';
 
 const BUNDLE_NAME = 'bundle.js';
@@ -27,6 +28,12 @@ export default {
         dest: './dist',
       }]
     }),
-    terser()
+    terser(),
+    {
+      name: 'map-watch',
+      load() {
+        this.addWatchFile(path.resolve('./src/public/maps/map.json'));
+      }
+    }
   ]
 };

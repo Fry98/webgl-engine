@@ -1,3 +1,4 @@
+import { LightMap } from './Lights';
 // IMPORTS
 import KeyMap from './Keymap';
 import Camera from './Camera';
@@ -22,6 +23,7 @@ const cam = new Camera([0, 0, 0], [0, 0, 1], config.fov);
 const mouse = new MouseTracker(canv);
 let map: Map = null;
 let skybox: Skybox = null;
+let lights: LightMap = null;
 main();
 
 // MAIN FUNCTION
@@ -29,6 +31,7 @@ async function main() {
   const loaded = await loadMap(gl, defaultShader, skyboxShader, 'map.json');
   map = loaded.objects;
   skybox = loaded.skybox;
+  lights = loaded.lights;
 
   gl.enable(gl.DEPTH_TEST);
   requestAnimationFrame(loop);
@@ -45,23 +48,29 @@ function loop() {
 function update() {
 
   // KEYBOARD CONTROLS
+  let moveSpeed = 1;
+
+  if (KeyMap[16]) {
+    moveSpeed = 2;
+  }
+
   if (KeyMap[65]) {
-    cam.moveRight(-1);
+    cam.moveRight(-moveSpeed);
   }
 
   if (KeyMap[68]) {
-    cam.moveRight(1);
+    cam.moveRight(moveSpeed);
   }
 
   if (KeyMap[87]) {
-    cam.moveForward(1);
+    cam.moveForward(moveSpeed);
   }
 
   if (KeyMap[83]) {
-    cam.moveForward(-1);
+    cam.moveForward(-moveSpeed);
   }
 
-  if (KeyMap[16]) {
+  if (KeyMap[17]) {
     cam.moveUp(-1);
   }
 
@@ -95,6 +104,12 @@ function draw() {
     gl.bindTexture(gl.TEXTURE_2D, object.texture);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
     gl.uniformMatrix4fv(defaultShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
+    gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
+    gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
+    gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
+    gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
+    gl.uniform1f(defaultShader.uniform.shininess, object.shininess);
+    gl.uniform1f(defaultShader.uniform.specCoef, object.specCoef);
 
     for (const instance of object.instances) {
       gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance);

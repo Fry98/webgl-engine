@@ -11,7 +11,13 @@ export default class DefaultShader extends Shader {
   };
   uniform: {
     mWorld: WebGLUniformLocation,
-    mViewProjection: WebGLUniformLocation
+    mViewProjection: WebGLUniformLocation,
+    ambient: WebGLUniformLocation,
+    sunInt: WebGLUniformLocation,
+    sunPos: WebGLUniformLocation,
+    shininess: WebGLUniformLocation,
+    specCoef: WebGLUniformLocation,
+    cameraPos: WebGLUniformLocation
   }
 
   constructor(gl: WebGL2RenderingContext) {
@@ -27,7 +33,13 @@ export default class DefaultShader extends Shader {
     };
     this.uniform = {
       mWorld: gl.getUniformLocation(this.program, 'mWorld'),
-      mViewProjection: gl.getUniformLocation(this.program, 'mViewProjection')
+      mViewProjection: gl.getUniformLocation(this.program, 'mViewProjection'),
+      ambient: gl.getUniformLocation(this.program, 'ambient'),
+      sunInt: gl.getUniformLocation(this.program, 'sunInt'),
+      sunPos: gl.getUniformLocation(this.program, 'sunPos'),
+      shininess: gl.getUniformLocation(this.program, 'shininess'),
+      specCoef: gl.getUniformLocation(this.program, 'specCoef'),
+      cameraPos: gl.getUniformLocation(this.program, 'cameraPos')
     };
   }
 }

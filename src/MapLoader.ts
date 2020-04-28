@@ -13,7 +13,9 @@ export type Map = {
   vertNormals: WebGLBuffer,
   indicies: WebGLBuffer,
   indexCount: number,
-  instances: mat4[]
+  instances: mat4[],
+  shininess: number,
+  specCoef: number
 }[];
 
 export default async function loadMap(
@@ -126,13 +128,16 @@ export default async function loadMap(
       vertNormals,
       indicies,
       indexCount: meshes[i].indices.length,
-      instances
+      instances,
+      shininess: map.objects[i].shininess,
+      specCoef: map.objects[i].specCoef
     });
   }
 
   return {
     skybox: new Skybox(gl, skyboxShader, skybox),
-    objects
+    objects,
+    lights: map.lights
   };
 }
 
