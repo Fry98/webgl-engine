@@ -9,8 +9,9 @@ import loadMap, { Map, LightMap, Fog } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
 
-// CANVAS SETUP
+// DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
+const loading = document.getElementById('loading');
 const gl = canv.getContext('webgl2');
 canv.onclick = () => canv.requestPointerLock();
 viewport(gl);
@@ -34,6 +35,7 @@ async function main() {
   lights = loaded.lights;
   fog = loaded.fog;
 
+  loading.style.display = 'none';
   gl.enable(gl.DEPTH_TEST);
   requestAnimationFrame(loop);
 }

@@ -37,6 +37,8 @@ export default {
       name: 'map-watch',
       load() {
         this.addWatchFile(path.resolve('./src/public/maps/map.json'));
+        this.addWatchFile(path.resolve('./src/public/index.html'));
+        this.addWatchFile(path.resolve('./src/public/style.css'));
       }
     }
   ]
