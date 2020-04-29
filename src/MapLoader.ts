@@ -1,4 +1,4 @@
-import { glMatrix } from 'gl-matrix';
+import { glMatrix, vec3 } from 'gl-matrix';
 import { mat4 } from 'gl-matrix';
 import { downloadMeshes, MeshMap, Mesh } from '../node_modules/webgl-obj-loader/src/index';
 import DefaultShader from './shaders/DefaultShader';
@@ -17,6 +17,19 @@ export type Map = {
   shininess: number,
   specCoef: number
 }[];
+
+export interface LightMap {
+  ambient: vec3,
+  directional: {
+    intensity: vec3,
+    position: vec3
+  }
+}
+
+export interface Fog {
+  color: vec3,
+  density: number
+}
 
 export default async function loadMap(
   gl: WebGL2RenderingContext,
@@ -137,7 +150,8 @@ export default async function loadMap(
   return {
     skybox: new Skybox(gl, skyboxShader, skybox),
     objects,
-    lights: map.lights
+    lights: map.lights,
+    fog: map.fog
   };
 }
 

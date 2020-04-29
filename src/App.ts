@@ -1,4 +1,3 @@
-import { LightMap } from './Lights';
 // IMPORTS
 import KeyMap from './Keymap';
 import Camera from './Camera';
@@ -6,7 +5,7 @@ import viewport from './Viewport';
 import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
 import config from './config.json';
-import loadMap, { Map } from './MapLoader';
+import loadMap, { Map, LightMap, Fog } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
 
@@ -24,6 +23,7 @@ const mouse = new MouseTracker(canv);
 let map: Map = null;
 let skybox: Skybox = null;
 let lights: LightMap = null;
+let fog: Fog = null;
 main();
 
 // MAIN FUNCTION
@@ -32,6 +32,7 @@ async function main() {
   map = loaded.objects;
   skybox = loaded.skybox;
   lights = loaded.lights;
+  fog = loaded.fog;
 
   gl.enable(gl.DEPTH_TEST);
   requestAnimationFrame(loop);
@@ -93,30 +94,51 @@ function update() {
 
 // DRAW FUNCTION
 function draw() {
+
+  // CLEAR SCREEN
   gl.clearColor(0.4, 0.4, 0.45, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // ENVIROMENT
   gl.useProgram(defaultShader.program);
   for (const object of map) {
+
+    // Mesh
     gl.bindVertexArray(object.vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
     gl.bindBuffer(gl.ARRAY_BUFFER, object.vertNormals);
+
+    // Texture
     gl.bindBuffer(gl.ARRAY_BUFFER, object.texCoords);
     gl.bindTexture(gl.TEXTURE_2D, object.texture);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
-    gl.uniformMatrix4fv(defaultShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
+
+    // Transformation Matrices
+    gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
+    gl.uniformMatrix4fv(defaultShader.uniform.mProjection, false, cam.getProjectionMatrix());
+
+    // Direction Lighting
     gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
     gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
     gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
+
+    // Specular Lighting
     gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
     gl.uniform1f(defaultShader.uniform.shininess, object.shininess);
     gl.uniform1f(defaultShader.uniform.specCoef, object.specCoef);
 
+    // Fog
+    gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
+    gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
+
+    // Draw
     for (const instance of object.instances) {
       gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance);
       gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
     }
   }
 
+  // SKYBOX
   gl.useProgram(skyboxShader.program);
   skybox.draw(cam);
 }
