@@ -2,11 +2,14 @@ import { vec3, mat4, glMatrix } from "gl-matrix";
 
 export default class Camera {
   private position: vec3;
+  private posOld: vec3;
   private direction = vec3.create();
   private projection = mat4.create();
 
   constructor(position: vec3, direction: vec3, fov: number) {
     this.position = position;
+    this.posOld = position;
+
     vec3.normalize(this.direction, direction);
     mat4.perspective(
       this.projection,
@@ -68,5 +71,13 @@ export default class Camera {
     if (this.direction[1] > 0.95 || this.direction[1] < -0.95) {
       this.direction = backup;
     }
+  }
+
+  revert() {
+    this.position = [...this.posOld] as vec3;
+  }
+
+  persist() {
+    this.posOld = [...this.position] as vec3;
   }
 }

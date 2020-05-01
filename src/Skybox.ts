@@ -109,7 +109,7 @@ export default class Skybox {
     this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture);
     this.gl.uniformMatrix4fv(this.shader.uniform.mView, false, mViewNoTrans);
     this.gl.uniformMatrix4fv(this.shader.uniform.mProjection, false, mProj);
-    
+
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
     this.gl.depthFunc(this.gl.LESS);
   }

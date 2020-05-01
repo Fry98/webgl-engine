@@ -3,7 +3,6 @@ import frag from './glsl/skybox.frag.glsl';
 import Shader from './Shader';
 
 export default class SkyboxShader extends Shader {
-  program: WebGLProgram;
   attrib: {
     vertPosition: number,
   };

@@ -3,7 +3,6 @@ import frag from './glsl/default.frag.glsl';
 import Shader from './Shader';
 
 export default class DefaultShader extends Shader {
-  program: WebGLProgram;
   attrib: {
     vertPosition: number,
     vertNormal: number,

@@ -58,5 +58,11 @@
     "skybox/skybox_ny.png",
     "skybox/skybox_pz.png",
     "skybox/skybox_nz.png"
+  ],
+  "colliders": [
+    {
+      "position": [2.5, -5, -2],
+      "size": [6, 5, 3]
+    }
   ]
 }

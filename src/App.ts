@@ -5,9 +5,10 @@ import viewport from './Viewport';
 import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
 import config from './config.json';
-import loadMap, { Map, LightMap, Fog } from './MapLoader';
+import loadMap, { Map, LightMap, Fog, Collisions } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
+import ColliderShader from './shaders/ColliderShader';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
@@ -16,27 +17,37 @@ const gl = canv.getContext('webgl2');
 canv.onclick = () => canv.requestPointerLock();
 viewport(gl);
 
-// DECLARATIONS
+// SHADERS
 const defaultShader = new DefaultShader(gl);
 const skyboxShader = new SkyboxShader(gl);
+const colliderShader = new ColliderShader(gl);
+
+// DECLARATIONS
 const cam = new Camera([0, 0, 0], [0, 0, 1], config.fov);
 const mouse = new MouseTracker(canv);
 let map: Map = null;
 let skybox: Skybox = null;
 let lights: LightMap = null;
 let fog: Fog = null;
+let collisions: Collisions = null;
 main();
 
 // MAIN FUNCTION
 async function main() {
-  const loaded = await loadMap(gl, defaultShader, skyboxShader, 'map.json');
+  const loaded = await loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json');
   map = loaded.objects;
   skybox = loaded.skybox;
   lights = loaded.lights;
   fog = loaded.fog;
+  collisions = {
+    draw: false,
+    boxes: loaded.boxes
+  };
 
   loading.style.display = 'none';
   gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   requestAnimationFrame(loop);
 }
 
@@ -80,6 +91,12 @@ function update() {
   if (KeyMap[32]) {
     cam.moveUp(1);
   }
+
+  // CAMERA COLLISIONS
+  collisions.boxes.forEach(box => {
+    if (box.isColliding(cam)) cam.revert();
+  });
+  cam.persist();
 
   // MOUSE CONTROLS
   const mouseMove = mouse.getMovement();
@@ -143,4 +160,17 @@ function draw() {
   // SKYBOX
   gl.useProgram(skyboxShader.program);
   skybox.draw(cam);
+
+  // COLLIDERS
+  if (collisions.draw) {
+    gl.useProgram(colliderShader.program);
+    collisions.boxes.forEach(box => box.draw(cam));
+  }
 }
+
+// KEYBOARD LISTENER
+document.addEventListener('keydown', e => {
+  if (e.keyCode === 67) {
+    collisions.draw = !collisions.draw;
+  }
+});

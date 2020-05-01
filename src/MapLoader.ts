@@ -1,9 +1,11 @@
 import { glMatrix, vec3 } from 'gl-matrix';
 import { mat4 } from 'gl-matrix';
-import { downloadMeshes, MeshMap, Mesh } from '../node_modules/webgl-obj-loader/src/index';
+import { downloadMeshes, Mesh } from '../node_modules/webgl-obj-loader/src/index';
 import DefaultShader from './shaders/DefaultShader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
+import Collider from './Collider';
+import ColliderShader from './shaders/ColliderShader';
 
 export type Map = {
   vao: WebGLVertexArrayObject,
@@ -31,10 +33,16 @@ export interface Fog {
   density: number
 }
 
+export interface Collisions {
+  draw: boolean,
+  boxes: Collider[]
+}
+
 export default async function loadMap(
   gl: WebGL2RenderingContext,
   defaultShader: DefaultShader,
   skyboxShader: SkyboxShader,
+  colliderShader: ColliderShader,
   path: string
 ) {
   const res = await fetch(`maps/${path}`);
@@ -147,11 +155,15 @@ export default async function loadMap(
     });
   }
 
+  const boxes: Collider[] = [];
+  map.colliders.forEach((box: any) => boxes.push(new Collider(gl, box.position, box.size, colliderShader)));
+
   return {
     skybox: new Skybox(gl, skyboxShader, skybox),
     objects,
-    lights: map.lights,
-    fog: map.fog
+    lights: map.lights as LightMap,
+    fog: map.fog as Fog,
+    boxes
   };
 }
 
