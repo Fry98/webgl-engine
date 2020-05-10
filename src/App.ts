@@ -34,21 +34,27 @@ main();
 
 // MAIN FUNCTION
 async function main() {
-  const loaded = await loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json');
-  map = loaded.objects;
-  skybox = loaded.skybox;
-  lights = loaded.lights;
-  fog = loaded.fog;
-  collisions = {
-    draw: false,
-    boxes: loaded.boxes
-  };
+  loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json').then(loaded => {
+    map = loaded.objects;
+    skybox = loaded.skybox;
+    lights = loaded.lights;
+    fog = loaded.fog;
+    collisions = {
+      draw: false,
+      boxes: loaded.boxes
+    };
 
-  loading.style.display = 'none';
-  gl.enable(gl.DEPTH_TEST);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  requestAnimationFrame(loop);
+    loading.style.display = 'none';
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    requestAnimationFrame(loop);
+  }).catch(e => {
+    loading.innerHTML = 'ERROR';
+    setTimeout(() => {
+      alert(e.message);
+    }, 0);
+  });
 }
 
 // GAME LOOP
@@ -115,11 +121,35 @@ function update() {
 function draw() {
 
   // CLEAR SCREEN
-  gl.clearColor(0.4, 0.4, 0.45, 1.0);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // ENVIROMENT
   gl.useProgram(defaultShader.program);
+  gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
+
+  // Transformation Matrices
+  gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
+  gl.uniformMatrix4fv(defaultShader.uniform.mProjection, false, cam.getProjectionMatrix());
+
+  // Directional Light
+  gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
+  gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
+  gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
+
+  // Point Light
+  console.log(lights.point.length);
+  gl.uniform1i(defaultShader.uniform.lightCount, lights.point.length);
+  for (let i = 0; i < lights.point.length; i++) {
+    gl.uniform3fv(defaultShader.uniform.lights[i].pos, lights.point[i].position);
+    gl.uniform3fv(defaultShader.uniform.lights[i].color, lights.point[i].color);
+    gl.uniform3fv(defaultShader.uniform.lights[i].atten, lights.point[i].attenuation);
+  }
+
+  // Fog
+  gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
+  gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
+
   for (const object of map) {
 
     // Mesh
@@ -132,23 +162,9 @@ function draw() {
     gl.bindTexture(gl.TEXTURE_2D, object.texture);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
 
-    // Transformation Matrices
-    gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
-    gl.uniformMatrix4fv(defaultShader.uniform.mProjection, false, cam.getProjectionMatrix());
-
-    // Direction Lighting
-    gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
-    gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
-    gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
-
     // Specular Lighting
-    gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
     gl.uniform1f(defaultShader.uniform.shininess, object.shininess);
     gl.uniform1f(defaultShader.uniform.specCoef, object.specCoef);
-
-    // Fog
-    gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
-    gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
 
     // Draw
     for (const instance of object.instances) {

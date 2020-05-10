@@ -2,6 +2,12 @@ import vert from './glsl/default.vert.glsl';
 import frag from './glsl/default.frag.glsl';
 import Shader from './Shader';
 
+export interface PointLight {
+  pos: WebGLUniformLocation,
+  color: WebGLUniformLocation,
+  atten: WebGLUniformLocation
+}
+
 export default class DefaultShader extends Shader {
   attrib: {
     vertPosition: number,
@@ -19,7 +25,9 @@ export default class DefaultShader extends Shader {
     specCoef: WebGLUniformLocation,
     cameraPos: WebGLUniformLocation,
     fogDensity: WebGLUniformLocation,
-    fogColor: WebGLUniformLocation
+    fogColor: WebGLUniformLocation,
+    lightCount: WebGLUniformLocation,
+    lights: PointLight[]
   }
 
   constructor(gl: WebGL2RenderingContext) {
@@ -44,7 +52,24 @@ export default class DefaultShader extends Shader {
       specCoef: gl.getUniformLocation(this.program, 'specCoef'),
       cameraPos: gl.getUniformLocation(this.program, 'cameraPos'),
       fogDensity: gl.getUniformLocation(this.program, 'fogDensity'),
-      fogColor: gl.getUniformLocation(this.program, 'fogColor')
+      fogColor: gl.getUniformLocation(this.program, 'fogColor'),
+      lightCount: gl.getUniformLocation(this.program, 'lightCount'),
+      lights: this.getLightArray(gl, 5)
     };
   }
+
+  private getLightArray(gl: WebGL2RenderingContext, count: number) {
+    const ret: PointLight[] = [];
+
+    for (let i = 0; i < count; i++) {
+      ret.push({
+        pos: gl.getUniformLocation(this.program, `lights[${i}].pos`),
+        color: gl.getUniformLocation(this.program, `lights[${i}].color`),
+        atten: gl.getUniformLocation(this.program, `lights[${i}].atten`)
+      });
+    }
+
+    return ret;
+  }
 }
+

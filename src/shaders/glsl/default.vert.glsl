@@ -5,6 +5,7 @@ in vec3 vertPosition;
 in vec3 vertNormal;
 in vec2 vertTexCoord;
 
+out vec3 fragPosition;
 out vec2 fragTexCoord;
 out vec3 fragNormal;
 out float visibility;
@@ -16,9 +17,11 @@ uniform mat4 mProjection;
 uniform float fogDensity;
 
 void main() {
+  fragPosition = (mWorld * vec4(vertPosition, 1.0)).xyz;
   fragNormal = (mWorld * vec4(vertNormal, 0.0)).xyz;
   fragTexCoord = vertTexCoord;
 
+  // Fog
   vec4 coordsToCamera = mView * mWorld * vec4(vertPosition, 1.0);
   float distFromCam = length(coordsToCamera.xyz);
   visibility = -pow((distFromCam * fogDensity), 1.2);

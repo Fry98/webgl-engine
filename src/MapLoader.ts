@@ -25,7 +25,12 @@ export interface LightMap {
   directional: {
     intensity: vec3,
     position: vec3
-  }
+  },
+  point: {
+    color: vec3,
+    position: vec3,
+    attenuation: vec3
+  }[]
 }
 
 export interface Fog {
@@ -158,6 +163,7 @@ export default async function loadMap(
   const boxes: Collider[] = [];
   map.colliders.forEach((box: any) => boxes.push(new Collider(gl, box.position, box.size, colliderShader)));
 
+  if (map.lights.point.length > 5) throw new Error('Invalid number of lights');
   return {
     skybox: new Skybox(gl, skyboxShader, skybox),
     objects,
