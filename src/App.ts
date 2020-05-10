@@ -4,7 +4,6 @@ import Camera from './Camera';
 import viewport from './Viewport';
 import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
-import config from './config.json';
 import loadMap, { Map, LightMap, Fog, Collisions } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
@@ -23,8 +22,8 @@ const skyboxShader = new SkyboxShader(gl);
 const colliderShader = new ColliderShader(gl);
 
 // DECLARATIONS
-const cam = new Camera([0, 0, 0], [0, 0, 1], config.fov);
 const mouse = new MouseTracker(canv);
+let cam: Camera = null;
 let map: Map = null;
 let skybox: Skybox = null;
 let lights: LightMap = null;
@@ -35,6 +34,7 @@ main();
 // MAIN FUNCTION
 async function main() {
   loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json').then(loaded => {
+    cam = loaded.camera;
     map = loaded.objects;
     skybox = loaded.skybox;
     lights = loaded.lights;
@@ -138,7 +138,6 @@ function draw() {
   gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
 
   // Point Light
-  console.log(lights.point.length);
   gl.uniform1i(defaultShader.uniform.lightCount, lights.point.length);
   for (let i = 0; i < lights.point.length; i++) {
     gl.uniform3fv(defaultShader.uniform.lights[i].pos, lights.point[i].position);
@@ -181,6 +180,7 @@ function draw() {
   if (collisions.draw) {
     gl.useProgram(colliderShader.program);
     collisions.boxes.forEach(box => box.draw(cam));
+    lights.point.forEach(light => light.draw(cam));
   }
 }
 

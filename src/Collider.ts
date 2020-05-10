@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix";
+import { vec3, mat4 } from "gl-matrix";
 import Camera from "./Camera";
 import ColliderShader from "./shaders/ColliderShader";
 
@@ -10,12 +10,15 @@ export default class Collider {
   private position: vec3;
   private size: vec3;
   private vertices: number[];
+  private mWorld: mat4;
 
   constructor(gl: WebGL2RenderingContext, position: vec3, size: vec3, shader: ColliderShader) {
     this.gl = gl;
     this.shader = shader;
     this.position = position;
     this.size = size;
+    this.mWorld = mat4.create();
+    mat4.identity(this.mWorld);
 
     const [x, y, z] = this.position;
     const [w, h, d] = this.size;
@@ -91,6 +94,8 @@ export default class Collider {
     this.gl.bindVertexArray(this.vao);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
     this.gl.uniformMatrix4fv(this.shader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
+    this.gl.uniformMatrix4fv(this.shader.uniform.mWorld, false, this.mWorld);
+    this.gl.uniform4fv(this.shader.uniform.color, [1, 0, 0, 0.3]);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
   }
 

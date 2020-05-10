@@ -6,6 +6,9 @@ import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
 import Collider from './Collider';
 import ColliderShader from './shaders/ColliderShader';
+import { PointLight } from './PointLight';
+import Camera from './Camera';
+import config from './config.json';
 
 export type Map = {
   vao: WebGLVertexArrayObject,
@@ -26,11 +29,7 @@ export interface LightMap {
     intensity: vec3,
     position: vec3
   },
-  point: {
-    color: vec3,
-    position: vec3,
-    attenuation: vec3
-  }[]
+  point: PointLight[]
 }
 
 export interface Fog {
@@ -164,12 +163,20 @@ export default async function loadMap(
   map.colliders.forEach((box: any) => boxes.push(new Collider(gl, box.position, box.size, colliderShader)));
 
   if (map.lights.point.length > 5) throw new Error('Invalid number of lights');
+
+  const lights: LightMap = {
+    ambient: map.lights.ambient,
+    directional: map.lights.directional,
+    point: map.lights.point.map((x: any) => new PointLight(gl, colliderShader, x.position, x.color, x.attenuation))
+  };
+
   return {
     skybox: new Skybox(gl, skyboxShader, skybox),
+    camera: new Camera(map.camera.position, map.camera.direction, config.fov),
     objects,
-    lights: map.lights as LightMap,
-    fog: map.fog as Fog,
-    boxes
+    lights,
+    boxes,
+    fog: map.fog as Fog
   };
 }
 

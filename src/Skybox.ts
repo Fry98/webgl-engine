@@ -1,10 +1,10 @@
 import SkyboxShader from "./shaders/SkyboxShader";
 import Camera from "./Camera";
 import { mat4 } from "gl-matrix";
+import { cubeVertices } from "./CubeVertices";
 
 export default class Skybox {
   private vao: WebGLVertexArrayObject;
-  private vertices: number[];
   private vertBuffer: WebGLBuffer;
   private texture: WebGLTexture;
   private gl: WebGL2RenderingContext;
@@ -16,53 +16,9 @@ export default class Skybox {
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
 
-    this.vertices = [
-      -1.0,  1.0, -1.0,
-      -1.0, -1.0, -1.0,
-      1.0, -1.0, -1.0,
-      1.0, -1.0, -1.0,
-      1.0,  1.0, -1.0,
-      -1.0,  1.0, -1.0,
-
-      -1.0, -1.0,  1.0,
-      -1.0, -1.0, -1.0,
-      -1.0,  1.0, -1.0,
-      -1.0,  1.0, -1.0,
-      -1.0,  1.0,  1.0,
-      -1.0, -1.0,  1.0,
-
-      1.0, -1.0, -1.0,
-      1.0, -1.0,  1.0,
-      1.0,  1.0,  1.0,
-      1.0,  1.0,  1.0,
-      1.0,  1.0, -1.0,
-      1.0, -1.0, -1.0,
-
-      -1.0, -1.0,  1.0,
-      -1.0,  1.0,  1.0,
-      1.0,  1.0,  1.0,
-      1.0,  1.0,  1.0,
-      1.0, -1.0,  1.0,
-      -1.0, -1.0,  1.0,
-
-      -1.0,  1.0, -1.0,
-      1.0,  1.0, -1.0,
-      1.0,  1.0,  1.0,
-      1.0,  1.0,  1.0,
-      -1.0,  1.0,  1.0,
-      -1.0,  1.0, -1.0,
-
-      -1.0, -1.0, -1.0,
-      -1.0, -1.0,  1.0,
-      1.0, -1.0, -1.0,
-      1.0, -1.0, -1.0,
-      -1.0, -1.0,  1.0,
-      1.0, -1.0,  1.0
-    ];
-
     this.vertBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeVertices), gl.STATIC_DRAW);
     gl.vertexAttribPointer(
       shader.attrib.vertPosition,
       3,
@@ -110,7 +66,7 @@ export default class Skybox {
     this.gl.uniformMatrix4fv(this.shader.uniform.mView, false, mViewNoTrans);
     this.gl.uniformMatrix4fv(this.shader.uniform.mProjection, false, mProj);
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length / 3);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, cubeVertices.length / 3);
     this.gl.depthFunc(this.gl.LESS);
   }
 }

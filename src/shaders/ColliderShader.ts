@@ -7,7 +7,9 @@ export default class ColliderShader extends Shader {
     vertPosition: number
   };
   uniform: {
-    mViewProjection: WebGLUniformLocation
+    mViewProjection: WebGLUniformLocation,
+    mWorld: WebGLUniformLocation,
+    color: WebGLUniformLocation
   }
 
   constructor(gl: WebGL2RenderingContext) {
@@ -21,6 +23,8 @@ export default class ColliderShader extends Shader {
     };
     this.uniform = {
       mViewProjection: gl.getUniformLocation(this.program, 'mViewProjection'),
+      mWorld: gl.getUniformLocation(this.program, 'mWorld'),
+      color: gl.getUniformLocation(this.program, 'color')
     };
   }
 }
