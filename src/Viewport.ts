@@ -3,11 +3,10 @@ export default function(gl: WebGL2RenderingContext) {
   window.addEventListener('resize', rescale);
 
   function rescale() {
-    if((window.innerWidth / 16) * 9 <= window.innerHeight){
+    if ((window.innerWidth / 16) * 9 <= window.innerHeight) {
       gl.canvas.width = window.innerWidth;
       gl.canvas.height = (window.innerWidth / 16) * 9;
-    }
-    else{
+    } else {
       gl.canvas.height = window.innerHeight;
       gl.canvas.width = (window.innerHeight / 9) * 16;
     }

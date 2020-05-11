@@ -1,13 +1,17 @@
 // IMPORTS
+import { glMatrix } from 'gl-matrix';
 import KeyMap from './Keymap';
 import Camera from './Camera';
 import viewport from './Viewport';
 import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
-import loadMap, { Map, LightMap, Fog, Collisions } from './MapLoader';
+import loadMap, { Map, LightMap, Fog, Collisions, loadImage } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
 import ColliderShader from './shaders/ColliderShader';
+import config from './config.json';
+import GuiRenderer from './GuiRenderer';
+import GuiShader from './shaders/GuiShader';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
@@ -20,20 +24,26 @@ viewport(gl);
 const defaultShader = new DefaultShader(gl);
 const skyboxShader = new SkyboxShader(gl);
 const colliderShader = new ColliderShader(gl);
+const guiShader = new GuiShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
+const flashlightInnerAngle = glMatrix.toRadian(config.flashlight.inner);
+const flashlightOuterAngle = glMatrix.toRadian(config.flashlight.outer);
 let cam: Camera = null;
 let map: Map = null;
 let skybox: Skybox = null;
 let lights: LightMap = null;
 let fog: Fog = null;
 let collisions: Collisions = null;
+let guiRenderer: GuiRenderer = null;
+let flashlightOn = true;
 main();
 
 // MAIN FUNCTION
 async function main() {
-  loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json').then(loaded => {
+  try {
+    const loaded = await loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json');
     cam = loaded.camera;
     map = loaded.objects;
     skybox = loaded.skybox;
@@ -44,17 +54,18 @@ async function main() {
       boxes: loaded.boxes
     };
 
+    guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor.png'));
     loading.style.display = 'none';
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     requestAnimationFrame(loop);
-  }).catch(e => {
+  } catch (e) {
     loading.innerHTML = 'ERROR';
     setTimeout(() => {
       alert(e.message);
     }, 0);
-  });
+  }
 }
 
 // GAME LOOP
@@ -91,11 +102,11 @@ function update() {
   }
 
   if (KeyMap[17]) {
-    cam.moveUp(-1);
+    cam.moveUp(-0.7);
   }
 
   if (KeyMap[32]) {
-    cam.moveUp(1);
+    cam.moveUp(0.7);
   }
 
   // CAMERA COLLISIONS
@@ -126,7 +137,13 @@ function draw() {
 
   // ENVIROMENT
   gl.useProgram(defaultShader.program);
+
+  // Flashlight
   gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
+  gl.uniform3fv(defaultShader.uniform.cameraDir, cam.getDirection());
+  gl.uniform1i(defaultShader.uniform.flashlightOn, flashlightOn ? 1 : 0);
+  gl.uniform1f(defaultShader.uniform.flashlightInnerAngle, flashlightInnerAngle);
+  gl.uniform1f(defaultShader.uniform.flashlightOuterAngle, flashlightOuterAngle);
 
   // Transformation Matrices
   gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
@@ -176,17 +193,26 @@ function draw() {
   gl.useProgram(skyboxShader.program);
   skybox.draw(cam);
 
-  // COLLIDERS
+  // DEBUG VIEW
   if (collisions.draw) {
     gl.useProgram(colliderShader.program);
     collisions.boxes.forEach(box => box.draw(cam));
     lights.point.forEach(light => light.draw(cam));
   }
+
+  // GUI
+  gl.useProgram(guiShader.program);
+  guiRenderer.draw();
 }
 
 // KEYBOARD LISTENER
 document.addEventListener('keydown', e => {
-  if (e.keyCode === 67) {
-    collisions.draw = !collisions.draw;
+  switch (e.keyCode) {
+    case 67:
+      collisions.draw = !collisions.draw;
+      break;
+    case 70:
+      flashlightOn = !flashlightOn;
+      break;
   }
 });

@@ -162,8 +162,7 @@ export default async function loadMap(
   const boxes: Collider[] = [];
   map.colliders.forEach((box: any) => boxes.push(new Collider(gl, box.position, box.size, colliderShader)));
 
-  if (map.lights.point.length > 5) throw new Error('Invalid number of lights');
-
+  if (map.lights.point.length > 5) throw new Error('Too many lights');
   const lights: LightMap = {
     ambient: map.lights.ambient,
     directional: map.lights.directional,
@@ -180,7 +179,7 @@ export default async function loadMap(
   };
 }
 
-function loadImage(path: string): Promise<HTMLImageElement> {
+export function loadImage(path: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = `assets/${path}`;

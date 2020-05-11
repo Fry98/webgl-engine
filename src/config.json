@@ -1,3 +1,7 @@
 {
-  "fov": 70
+  "fov": 70,
+  "flashlight": {
+    "inner": 17,
+    "outer": 20
+  }
 }

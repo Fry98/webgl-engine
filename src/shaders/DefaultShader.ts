@@ -24,9 +24,13 @@ export default class DefaultShader extends Shader {
     shininess: WebGLUniformLocation,
     specCoef: WebGLUniformLocation,
     cameraPos: WebGLUniformLocation,
+    cameraDir: WebGLUniformLocation,
     fogDensity: WebGLUniformLocation,
     fogColor: WebGLUniformLocation,
     lightCount: WebGLUniformLocation,
+    flashlightOn: WebGLUniformLocation,
+    flashlightInnerAngle: WebGLUniformLocation,
+    flashlightOuterAngle: WebGLUniformLocation,
     lights: PointLight[]
   }
 
@@ -51,9 +55,13 @@ export default class DefaultShader extends Shader {
       shininess: gl.getUniformLocation(this.program, 'shininess'),
       specCoef: gl.getUniformLocation(this.program, 'specCoef'),
       cameraPos: gl.getUniformLocation(this.program, 'cameraPos'),
+      cameraDir: gl.getUniformLocation(this.program, 'cameraDir'),
       fogDensity: gl.getUniformLocation(this.program, 'fogDensity'),
       fogColor: gl.getUniformLocation(this.program, 'fogColor'),
       lightCount: gl.getUniformLocation(this.program, 'lightCount'),
+      flashlightOn: gl.getUniformLocation(this.program, 'flashlightOn'),
+      flashlightInnerAngle: gl.getUniformLocation(this.program, 'flashlightInnerAngle'),
+      flashlightOuterAngle: gl.getUniformLocation(this.program, 'flashlightOuterAngle'),
       lights: this.getLightArray(gl, 5)
     };
   }

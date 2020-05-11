@@ -18,11 +18,16 @@ uniform vec3 ambient;
 uniform vec3 sunInt;
 uniform vec3 sunPos;
 uniform vec3 cameraPos;
+uniform vec3 cameraDir;
 uniform vec3 fogColor;
 
+uniform float flashlightInnerAngle;
+uniform float flashlightOuterAngle;
 uniform float shininess;
 uniform float specCoef;
+
 uniform int lightCount;
+uniform bool flashlightOn;
 uniform PointLight lights[5];
 
 uniform sampler2D smp;
