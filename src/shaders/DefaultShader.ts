@@ -29,8 +29,10 @@ export default class DefaultShader extends Shader {
     fogColor: WebGLUniformLocation,
     lightCount: WebGLUniformLocation,
     flashlightOn: WebGLUniformLocation,
-    flashlightInnerAngle: WebGLUniformLocation,
-    flashlightOuterAngle: WebGLUniformLocation,
+    flashlightColor: WebGLUniformLocation,
+    flashAttenParams: WebGLUniformLocation,
+    flashlightInnerCutoff: WebGLUniformLocation,
+    flashlightOuterCutoff: WebGLUniformLocation,
     lights: PointLight[]
   }
 
@@ -60,8 +62,10 @@ export default class DefaultShader extends Shader {
       fogColor: gl.getUniformLocation(this.program, 'fogColor'),
       lightCount: gl.getUniformLocation(this.program, 'lightCount'),
       flashlightOn: gl.getUniformLocation(this.program, 'flashlightOn'),
-      flashlightInnerAngle: gl.getUniformLocation(this.program, 'flashlightInnerAngle'),
-      flashlightOuterAngle: gl.getUniformLocation(this.program, 'flashlightOuterAngle'),
+      flashlightColor: gl.getUniformLocation(this.program, 'flashlightColor'),
+      flashAttenParams: gl.getUniformLocation(this.program, 'flashAttenParams'),
+      flashlightInnerCutoff: gl.getUniformLocation(this.program, 'flashlightInnerCutoff'),
+      flashlightOuterCutoff: gl.getUniformLocation(this.program, 'flashlightOuterCutoff'),
       lights: this.getLightArray(gl, 5)
     };
   }

@@ -28,8 +28,9 @@ const guiShader = new GuiShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
-const flashlightInnerAngle = glMatrix.toRadian(config.flashlight.inner);
-const flashlightOuterAngle = glMatrix.toRadian(config.flashlight.outer);
+const flashlightInnerCutoff = Math.cos(glMatrix.toRadian(config.flashlight.inner));
+const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer));
+let flashlightOn = false;
 let cam: Camera = null;
 let map: Map = null;
 let skybox: Skybox = null;
@@ -37,7 +38,6 @@ let lights: LightMap = null;
 let fog: Fog = null;
 let collisions: Collisions = null;
 let guiRenderer: GuiRenderer = null;
-let flashlightOn = true;
 main();
 
 // MAIN FUNCTION
@@ -142,8 +142,10 @@ function draw() {
   gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
   gl.uniform3fv(defaultShader.uniform.cameraDir, cam.getDirection());
   gl.uniform1i(defaultShader.uniform.flashlightOn, flashlightOn ? 1 : 0);
-  gl.uniform1f(defaultShader.uniform.flashlightInnerAngle, flashlightInnerAngle);
-  gl.uniform1f(defaultShader.uniform.flashlightOuterAngle, flashlightOuterAngle);
+  gl.uniform3fv(defaultShader.uniform.flashlightColor, config.flashlight.color);
+  gl.uniform3fv(defaultShader.uniform.flashAttenParams, config.flashlight.atten);
+  gl.uniform1f(defaultShader.uniform.flashlightInnerCutoff, flashlightInnerCutoff);
+  gl.uniform1f(defaultShader.uniform.flashlightOuterCutoff, flashlightOuterCutoff);
 
   // Transformation Matrices
   gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());

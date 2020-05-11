@@ -20,16 +20,18 @@ uniform vec3 sunPos;
 uniform vec3 cameraPos;
 uniform vec3 cameraDir;
 uniform vec3 fogColor;
+uniform vec3 flashlightColor;
+uniform vec3 flashAttenParams;
 
-uniform float flashlightInnerAngle;
-uniform float flashlightOuterAngle;
+uniform float flashlightInnerCutoff;
+uniform float flashlightOuterCutoff;
 uniform float shininess;
 uniform float specCoef;
 
 uniform int lightCount;
-uniform bool flashlightOn;
 uniform PointLight lights[5];
 
+uniform bool flashlightOn;
 uniform sampler2D smp;
 
 void main() {
@@ -54,6 +56,22 @@ void main() {
       unitAtten.z * (dist * dist)
     );
     lightInt += lights[i].color * attenuation;
+  }
+
+  // Flashlight
+  if (flashlightOn) {
+    vec3 unitFlashAttenParams = normalize(flashAttenParams);
+    float flashDist = length(fragPosition - cameraPos);
+    float theta = dot(normalize(fragPosition - cameraPos), normalize(cameraDir));
+    float epsilon = flashlightInnerCutoff - flashlightOuterCutoff;
+    float flashInt = clamp((theta - flashlightOuterCutoff) / epsilon, 0.0, 1.0);
+
+    float flashAtten = 1.0 / (
+      unitFlashAttenParams.x +
+      unitFlashAttenParams.y * flashDist +
+      unitFlashAttenParams.z * (flashDist * flashDist)
+    );
+    lightInt += flashlightColor * flashInt * flashAtten;
   }
 
   // Specular (Sun only)
