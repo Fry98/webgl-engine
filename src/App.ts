@@ -1,7 +1,7 @@
 // IMPORTS
 import { glMatrix } from 'gl-matrix';
 import KeyMap from './Keymap';
-import Camera from './Camera';
+import Camera, { View } from './Camera';
 import viewport from './Viewport';
 import DefaultShader from './shaders/DefaultShader';
 import MouseTracker from './MouseTracker';
@@ -203,8 +203,10 @@ function draw() {
   }
 
   // GUI
-  gl.useProgram(guiShader.program);
-  guiRenderer.draw();
+  if (cam.getState() === View.FREE) {
+    gl.useProgram(guiShader.program);
+    guiRenderer.draw();
+  }
 }
 
 // KEYBOARD LISTENER
@@ -215,6 +217,9 @@ document.addEventListener('keydown', e => {
       break;
     case 70:
       flashlightOn = !flashlightOn;
+      break;
+    case 69:
+      cam.switchView();
       break;
   }
 });
