@@ -10,6 +10,7 @@ import { PointLight } from './PointLight';
 import Camera from './Camera';
 import config from './config.json';
 import PickingShader from './shaders/PickingShader';
+import GameObject from './GameObject';
 
 export type Map = {
   vao: WebGLVertexArrayObject,
@@ -20,7 +21,7 @@ export type Map = {
   vertNormals: WebGLBuffer,
   indicies: WebGLBuffer,
   indexCount: number,
-  instances: mat4[],
+  instances: GameObject[],
   shininess: number,
   specCoef: number
 }[];
@@ -136,17 +137,9 @@ export default async function loadMap(
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicies);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes[i].indices), gl.STATIC_DRAW);
 
-    const instances: mat4[] = [];
+    const instances: GameObject[] = [];
     const placements = map.objects[i].placement;
-    for (const placement of placements) {
-      const mWorld = mat4.create();
-      mat4.translate(mWorld, mWorld, placement.position);
-      mat4.rotateX(mWorld, mWorld, glMatrix.toRadian(placement.rotation[0]));
-      mat4.rotateY(mWorld, mWorld, glMatrix.toRadian(placement.rotation[1]));
-      mat4.rotateZ(mWorld, mWorld, glMatrix.toRadian(placement.rotation[2]));
-      mat4.scale(mWorld, mWorld, placement.scale);
-      instances.push(mWorld);
-    }
+    placements.forEach((inst: any) => instances.push(new GameObject(inst.position, inst.rotation, inst.scale)));
 
     const pickingVao = gl.createVertexArray();
     gl.bindVertexArray(pickingVao);

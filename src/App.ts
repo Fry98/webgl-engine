@@ -1,5 +1,5 @@
 // IMPORTS
-import { glMatrix, vec4, mat4 } from 'gl-matrix';
+import { glMatrix, vec4, mat4, vec3 } from 'gl-matrix';
 import KeyMap from './Keymap';
 import Camera, { View } from './Camera';
 import viewport from './Viewport';
@@ -13,6 +13,7 @@ import config from './config.json';
 import GuiRenderer from './GuiRenderer';
 import GuiShader from './shaders/GuiShader';
 import PickingShader from './shaders/PickingShader';
+import GameObject from './GameObject';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
@@ -37,7 +38,7 @@ const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer
 let flashlightOn = false;
 let isPicking = false;
 let pickedIndex: number = 0;
-let pickedWorldMatrix: mat4 = null;
+let pickedObject: GameObject = null;
 let cam: Camera = null;
 let map: Map = null;
 let skybox: Skybox = null;
@@ -122,6 +123,43 @@ function update() {
     cam.moveUp(0.7);
   }
 
+  // SCENE TRANSFORM
+  if (pickedIndex !== 0) {
+    const fwdDir = vec3.clone(cam.getDirection());
+    fwdDir[1] = 0;
+    vec3.normalize(fwdDir, fwdDir);
+    vec3.scale(fwdDir, fwdDir, 0.4);
+
+    const lefttDir = vec3.clone(fwdDir);
+    const temp = lefttDir[0];
+    lefttDir[0] = lefttDir[2];
+    lefttDir[2] = -temp;
+
+    if (KeyMap[73]) {
+      pickedObject.move(fwdDir);
+    }
+
+    if (KeyMap[75]) {
+      pickedObject.move(fwdDir.map((x: number) => -x) as vec3);
+    }
+
+    if (KeyMap[74]) {
+      pickedObject.move(lefttDir);
+    }
+
+    if (KeyMap[76]) {
+      pickedObject.move(lefttDir.map((x: number) => -x) as vec3);
+    }
+
+    if (KeyMap[85]) {
+      pickedObject.move([0, -0.3, 0]);
+    }
+
+    if (KeyMap[79]) {
+      pickedObject.move([0, 0.3, 0]);
+    }
+  }
+
   // CAMERA COLLISIONS
   collisions.boxes.forEach(box => {
     if (box.isColliding(cam)) cam.revert();
@@ -200,7 +238,7 @@ function draw() {
 
     // Draw
     for (const instance of object.instances) {
-      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance);
+      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance.getWorldMatrix());
       gl.uniform1i(defaultShader.uniform.picked, index === pickedIndex ? 1 : 0);
       gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
       index++;
@@ -217,7 +255,7 @@ function draw() {
     gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
 
     const indexedObjects: {
-      [K: number]: mat4
+      [K: number]: GameObject
     } = {};
     index = 1;
     for (const object of map) {
@@ -229,11 +267,11 @@ function draw() {
           ((index >> 0) & 0xFF) / 0xFF,
           ((index >> 8) & 0xFF) / 0xFF,
           ((index >> 16) & 0xFF) / 0xFF,
-          ((index >> 24) & 0xFF) / 0xFF,
+          ((index >> 24) & 0xFF) / 0xFF
         ];
 
         gl.uniform4fv(pickingShader.uniform.color, color);
-        gl.uniformMatrix4fv(pickingShader.uniform.mWorld, false, instance);
+        gl.uniformMatrix4fv(pickingShader.uniform.mWorld, false, instance.getWorldMatrix());
         gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
         indexedObjects[index] = instance;
         index++;
@@ -252,7 +290,7 @@ function draw() {
     const clickedIndex = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
     if (clickedIndex !== pickedIndex) {
       pickedIndex = clickedIndex;
-      pickedWorldMatrix = indexedObjects[pickedIndex];
+      pickedObject = indexedObjects[pickedIndex];
     }
 
     gl.enable(gl.BLEND);
