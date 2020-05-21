@@ -17,6 +17,10 @@ export default class GameObject {
     this.position[2] += movement[2];
   }
 
+  scaleUp(factor: number) {
+    this.scale = this.scale.map((x: number) => x + factor) as vec3;
+  }
+
   getWorldMatrix() {
     const mWorld = mat4.create();
     mat4.translate(mWorld, mWorld, this.position);

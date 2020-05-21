@@ -1,5 +1,5 @@
 // IMPORTS
-import { glMatrix, vec4, mat4, vec3 } from 'gl-matrix';
+import { glMatrix, vec4, vec3 } from 'gl-matrix';
 import KeyMap from './Keymap';
 import Camera, { View } from './Camera';
 import viewport from './Viewport';
@@ -152,11 +152,19 @@ function update() {
     }
 
     if (KeyMap[85]) {
-      pickedObject.move([0, -0.3, 0]);
+      if (KeyMap[16]) {
+        pickedObject.scaleUp(-0.1);
+      } else {
+        pickedObject.move([0, -0.3, 0]);
+      }
     }
 
     if (KeyMap[79]) {
-      pickedObject.move([0, 0.3, 0]);
+      if (KeyMap[16]) {
+        pickedObject.scaleUp(0.1);
+      } else {
+        pickedObject.move([0, 0.3, 0]);
+      }
     }
   }
 

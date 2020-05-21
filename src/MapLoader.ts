@@ -1,5 +1,4 @@
-import { glMatrix, vec3 } from 'gl-matrix';
-import { mat4 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { downloadMeshes, Mesh } from '../node_modules/webgl-obj-loader/src/index';
 import DefaultShader from './shaders/DefaultShader';
 import Skybox from './Skybox';

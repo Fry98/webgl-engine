@@ -102,6 +102,7 @@ export default class Camera {
   }
 
   switchView() {
+    // TODO: New camera views
     switch (this.state) {
       case View.FREE:
         this.position = [-77.52, -2.12, 21.58];

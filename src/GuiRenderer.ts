@@ -2,7 +2,6 @@ import GuiShader from "./shaders/GuiShader";
 
 export default class GuiRenderer {
   private gl: WebGL2RenderingContext;
-  private shader: GuiShader;
   private vao: WebGLVertexArrayObject;
   private vertices: number[];
   private vertBuffer: WebGLBuffer;
@@ -12,7 +11,6 @@ export default class GuiRenderer {
 
   constructor(gl: WebGL2RenderingContext, shader: GuiShader, texture: HTMLImageElement) {
     this.gl = gl;
-    this.shader = shader;
     this.textureImage = texture;
     this.vertices = [
       -0.004, 0.004, 0, 0,
