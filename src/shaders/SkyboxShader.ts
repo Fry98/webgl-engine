@@ -4,7 +4,7 @@ import Shader from './Shader';
 
 export default class SkyboxShader extends Shader {
   attrib: {
-    vertPosition: number,
+    vertPosition: number
   };
   uniform: {
     mView: WebGLUniformLocation,

@@ -9,9 +9,11 @@ import ColliderShader from './shaders/ColliderShader';
 import { PointLight } from './PointLight';
 import Camera from './Camera';
 import config from './config.json';
+import PickingShader from './shaders/PickingShader';
 
 export type Map = {
   vao: WebGLVertexArrayObject,
+  pickingVao: WebGLVertexArrayObject,
   vertPos: WebGLBuffer,
   texture: WebGLTexture,
   texCoords: WebGLBuffer,
@@ -44,10 +46,11 @@ export interface Collisions {
 
 export default async function loadMap(
   gl: WebGL2RenderingContext,
+  path: string,
   defaultShader: DefaultShader,
   skyboxShader: SkyboxShader,
   colliderShader: ColliderShader,
-  path: string
+  pickingShader: PickingShader
 ) {
   const res = await fetch(`maps/${path}`);
   const map = await res.json();
@@ -145,8 +148,22 @@ export default async function loadMap(
       instances.push(mWorld);
     }
 
+    const pickingVao = gl.createVertexArray();
+    gl.bindVertexArray(pickingVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertPos);
+    gl.vertexAttribPointer(
+      pickingShader.attrib.vertPosition,
+      3,
+      gl.FLOAT,
+      false,
+      3 * Float32Array.BYTES_PER_ELEMENT,
+      0
+    );
+    gl.enableVertexAttribArray(pickingShader.attrib.vertPosition);
+
     objects.push({
       vao,
+      pickingVao,
       vertPos,
       texture,
       texCoords,

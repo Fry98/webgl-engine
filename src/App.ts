@@ -1,5 +1,5 @@
 // IMPORTS
-import { glMatrix } from 'gl-matrix';
+import { glMatrix, vec4, mat4 } from 'gl-matrix';
 import KeyMap from './Keymap';
 import Camera, { View } from './Camera';
 import viewport from './Viewport';
@@ -12,25 +12,32 @@ import ColliderShader from './shaders/ColliderShader';
 import config from './config.json';
 import GuiRenderer from './GuiRenderer';
 import GuiShader from './shaders/GuiShader';
+import PickingShader from './shaders/PickingShader';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
 const loading = document.getElementById('loading');
 const gl = canv.getContext('webgl2');
+const frameBuffer = gl.createFramebuffer();
+const fbTexture = gl.createTexture();
 canv.onclick = () => canv.requestPointerLock();
-viewport(gl);
+viewport(gl, frameBuffer, fbTexture);
 
 // SHADERS
 const defaultShader = new DefaultShader(gl);
 const skyboxShader = new SkyboxShader(gl);
 const colliderShader = new ColliderShader(gl);
 const guiShader = new GuiShader(gl);
+const pickingShader = new PickingShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
 const flashlightInnerCutoff = Math.cos(glMatrix.toRadian(config.flashlight.inner));
 const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer));
 let flashlightOn = false;
+let isPicking = false;
+let pickedIndex: number = 0;
+let pickedWorldMatrix: mat4 = null;
 let cam: Camera = null;
 let map: Map = null;
 let skybox: Skybox = null;
@@ -43,7 +50,13 @@ main();
 // MAIN FUNCTION
 async function main() {
   try {
-    const loaded = await loadMap(gl, defaultShader, skyboxShader, colliderShader, 'map.json');
+    const loaded = await loadMap(
+      gl, 'map.json',
+      defaultShader,
+      skyboxShader,
+      colliderShader,
+      pickingShader
+    );
     cam = loaded.camera;
     map = loaded.objects;
     skybox = loaded.skybox;
@@ -132,7 +145,6 @@ function update() {
 function draw() {
 
   // CLEAR SCREEN
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // ENVIROMENT
@@ -168,6 +180,8 @@ function draw() {
   gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
   gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
 
+  // RENDERBUFFER DRAW
+  let index = 1;
   for (const object of map) {
 
     // Mesh
@@ -187,8 +201,62 @@ function draw() {
     // Draw
     for (const instance of object.instances) {
       gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance);
+      gl.uniform1i(defaultShader.uniform.picked, index === pickedIndex ? 1 : 0);
       gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
+      index++;
     }
+  }
+
+  // PICKING FRAMEBUFFER DRAW
+  if (isPicking) {
+    isPicking = false;
+    gl.useProgram(pickingShader.program);
+    gl.disable(gl.BLEND);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
+
+    const indexedObjects: {
+      [K: number]: mat4
+    } = {};
+    index = 1;
+    for (const object of map) {
+      gl.bindVertexArray(object.pickingVao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
+      for (const instance of object.instances) {
+        const color: vec4 = [
+          ((index >> 0) & 0xFF) / 0xFF,
+          ((index >> 8) & 0xFF) / 0xFF,
+          ((index >> 16) & 0xFF) / 0xFF,
+          ((index >> 24) & 0xFF) / 0xFF,
+        ];
+
+        gl.uniform4fv(pickingShader.uniform.color, color);
+        gl.uniformMatrix4fv(pickingShader.uniform.mWorld, false, instance);
+        gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
+        indexedObjects[index] = instance;
+        index++;
+      }
+    }
+
+    const data = new Uint8Array(4);
+    gl.readPixels(
+      Math.floor(canv.width / 2),
+      Math.floor(canv.height / 2),
+      1, 1,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      data
+    );
+    const clickedIndex = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+    if (clickedIndex !== pickedIndex) {
+      pickedIndex = clickedIndex;
+      pickedWorldMatrix = indexedObjects[pickedIndex];
+    }
+
+    gl.enable(gl.BLEND);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
   // SKYBOX
@@ -220,6 +288,18 @@ document.addEventListener('keydown', e => {
       break;
     case 69:
       cam.switchView();
+      break;
+  }
+});
+
+document.addEventListener('mousedown', e => {
+  if (document.pointerLockElement !== canv) return;
+  switch (e.button) {
+    case 0:
+      isPicking = true;
+      break;
+    case 2:
+      pickedIndex = 0;
       break;
   }
 });
