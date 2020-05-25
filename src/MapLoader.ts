@@ -132,9 +132,10 @@ export default async function loadMap(
     );
     gl.enableVertexAttribArray(defaultShader.attrib.vertNormal);
 
+    const indexMerge = meshes[i].indicesPerMaterial.flat();
     const indicies = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicies);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(meshes[i].indices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexMerge), gl.STATIC_DRAW);
 
     const instances: GameObject[] = [];
     const placements = map.objects[i].placement;
@@ -161,7 +162,7 @@ export default async function loadMap(
       texCoords,
       vertNormals,
       indicies,
-      indexCount: meshes[i].indices.length,
+      indexCount: meshes[i].indicesPerMaterial.reduce((acc, x) => acc += x.length, 0),
       instances,
       shininess: map.objects[i].shininess,
       specCoef: map.objects[i].specCoef

@@ -130,10 +130,10 @@ function update() {
     vec3.normalize(fwdDir, fwdDir);
     vec3.scale(fwdDir, fwdDir, 0.4);
 
-    const lefttDir = vec3.clone(fwdDir);
-    const temp = lefttDir[0];
-    lefttDir[0] = lefttDir[2];
-    lefttDir[2] = -temp;
+    const leftDir = vec3.clone(fwdDir);
+    const temp = leftDir[0];
+    leftDir[0] = leftDir[2];
+    leftDir[2] = -temp;
 
     if (KeyMap[73]) {
       pickedObject.move(fwdDir);
@@ -144,11 +144,11 @@ function update() {
     }
 
     if (KeyMap[74]) {
-      pickedObject.move(lefttDir);
+      pickedObject.move(leftDir);
     }
 
     if (KeyMap[76]) {
-      pickedObject.move(lefttDir.map((x: number) => -x) as vec3);
+      pickedObject.move(leftDir.map((x: number) => -x) as vec3);
     }
 
     if (KeyMap[85]) {

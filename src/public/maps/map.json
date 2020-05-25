@@ -70,6 +70,32 @@
           "scale": [10, 10, 10]
         }
       ]
+    },
+    {
+      "mesh": "generator.obj",
+      "diffuse": "generator.png",
+      "shininess": 32,
+      "specCoef": 10,
+      "placement": [
+        {
+          "position": [0, 10, 0],
+          "rotation": [0, 0, 0],
+          "scale": [2, 2, 2]
+        }
+      ]
+    },
+    {
+      "mesh": "gascan.obj",
+      "diffuse": "gascan.png",
+      "shininess": 32,
+      "specCoef": 10,
+      "placement": [
+        {
+          "position": [0, 5, 0],
+          "rotation": [0, 0, 0],
+          "scale": [1, 1, 1]
+        }
+      ]
     }
   ],
   "skybox": [

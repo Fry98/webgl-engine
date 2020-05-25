@@ -5,6 +5,10 @@
     "noImplicitAny": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "removeComments": true
+    "removeComments": true,
+    "lib": [
+      "DOM",
+      "ESNext"
+    ]
   }
 }
