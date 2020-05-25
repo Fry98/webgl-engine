@@ -27,9 +27,21 @@ export default class GameObject {
     this.scale = this.scale.map((x: number) => x + factor) as vec3;
   }
 
-  getWorldMatrix() {
+  getWorldMatrix(radius?: number, duration?: number) {
     const mWorld = mat4.create();
-    mat4.translate(mWorld, mWorld, this.position);
+    
+    if (duration === undefined) {
+      mat4.translate(mWorld, mWorld, this.position);
+    } else {
+      const state = performance.now() / 1000 / duration;
+      const angle = Math.PI * 2 * state;
+      const offX = Math.sin(angle) * radius;
+      const offZ = Math.cos(angle) * radius;
+
+      mat4.translate(mWorld, mWorld, [this.position[0] + offX, this.position[1], this.position[2] + offZ]);
+      mat4.rotate(mWorld, mWorld, angle + Math.PI / 2, [0, 1, 0]);
+    }
+
     mat4.scale(mWorld, mWorld, this.scale);
     mat4.multiply(mWorld, mWorld, this.rotMat);
     return mWorld;

@@ -11,6 +11,11 @@ import config from './config.json';
 import PickingShader from './shaders/PickingShader';
 import GameObject from './GameObject';
 
+export interface Animation {
+  radius: number,
+  duration: number
+}
+
 export type Map = {
   vao: WebGLVertexArrayObject,
   pickingVao: WebGLVertexArrayObject,
@@ -22,7 +27,8 @@ export type Map = {
   indexCount: number,
   instances: GameObject[],
   shininess: number,
-  specCoef: number
+  specCoef: number,
+  animation: Animation | null
 }[];
 
 export interface LightMap {
@@ -165,7 +171,8 @@ export default async function loadMap(
       indexCount: meshes[i].indicesPerMaterial.reduce((acc, x) => acc += x.length, 0),
       instances,
       shininess: map.objects[i].shininess,
-      specCoef: map.objects[i].specCoef
+      specCoef: map.objects[i].specCoef,
+      animation: map.objects[i].animation !== undefined ? map.objects[i].animation : null
     });
   }
 

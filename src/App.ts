@@ -1,5 +1,5 @@
 // IMPORTS
-import { glMatrix, vec4, vec3 } from 'gl-matrix';
+import { glMatrix, vec4, vec3, mat4 } from 'gl-matrix';
 import KeyMap from './Keymap';
 import Camera, { View } from './Camera';
 import viewport from './Viewport';
@@ -246,7 +246,14 @@ function draw() {
 
     // Draw
     for (const instance of object.instances) {
-      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, instance.getWorldMatrix());
+      let mWorld: mat4;
+      if (object.animation === null) {
+        mWorld = instance.getWorldMatrix();
+      } else {
+        mWorld = instance.getWorldMatrix(object.animation.radius, object.animation.duration);
+      }
+
+      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, mWorld);
       gl.uniform1i(defaultShader.uniform.picked, index === pickedIndex ? 1 : 0);
       gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
       index++;
@@ -267,6 +274,7 @@ function draw() {
     } = {};
     index = 1;
     for (const object of map) {
+      if (object.animation !== null) continue;
       gl.bindVertexArray(object.pickingVao);
       gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
