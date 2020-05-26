@@ -14,6 +14,11 @@
         "color": [0.6, 0.5, 0.5],
         "position": [-1, -2.5, -9.5],
         "attenuation": [1, 0.03, 0.01]
+      },
+      {
+        "color": [1.5, 1.5, 2],
+        "position": [20, 4, -10.8],
+        "attenuation": [1, 0.01, 0.02]
       }
     ]
   },
@@ -197,6 +202,19 @@
           "position": [-10, -4.5, -10],
           "rotation": [-90, 0, 0],
           "scale": [2, 2, 2]
+        }
+      ]
+    },
+    {
+      "mesh": "light.obj",
+      "diffuse": "light.png",
+      "shininess": 1,
+      "specCoef": 0,
+      "placement": [
+        {
+          "position": [21.64, -5.1, -10.8],
+          "rotation": [0, 25, 0],
+          "scale": [3.4, 3.4, 3.4]
         }
       ]
     }
