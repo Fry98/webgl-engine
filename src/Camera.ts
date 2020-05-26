@@ -105,13 +105,13 @@ export default class Camera {
     // TODO: New camera views
     switch (this.state) {
       case View.FREE:
-        this.position = [-77.52, -2.12, 21.58];
-        this.direction = [0.47, -0.22, 0.86];
+        this.position = [18.8, 13.9, -33.1];
+        this.direction = [-0.56, -0.5, 0.65];
         this.state = View.VIEW_1;
         break;
       case View.VIEW_1:
-        this.position = [-77.86, 3.26, 252.04];
-        this.direction = [0.49, -0.44, -0.75];
+        this.position = [-5.5, 0.1, 6.6];
+        this.direction = [0.29, -0.12, -0.95];
         this.state = View.VIEW_2;
         break;
       case View.VIEW_2:

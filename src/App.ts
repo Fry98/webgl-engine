@@ -14,6 +14,8 @@ import GuiRenderer from './GuiRenderer';
 import GuiShader from './shaders/GuiShader';
 import PickingShader from './shaders/PickingShader';
 import GameObject from './GameObject';
+import Billboard from './Billboard';
+import BillboardShader from './shaders/BillboardShader';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
@@ -30,6 +32,7 @@ const skyboxShader = new SkyboxShader(gl);
 const colliderShader = new ColliderShader(gl);
 const guiShader = new GuiShader(gl);
 const pickingShader = new PickingShader(gl);
+const billboardShader = new BillboardShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
@@ -46,6 +49,7 @@ let lights: LightMap = null;
 let fog: Fog = null;
 let collisions: Collisions = null;
 let guiRenderer: GuiRenderer = null;
+let billboard: Billboard = null;
 main();
 
 // MAIN FUNCTION
@@ -67,7 +71,8 @@ async function main() {
       draw: false,
       boxes: loaded.boxes
     };
-
+      
+    billboard = new Billboard(gl, billboardShader, await loadImage("fire.png"));
     guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor.png'));
     loading.style.display = 'none';
     gl.enable(gl.DEPTH_TEST);
@@ -274,7 +279,10 @@ function draw() {
     } = {};
     index = 1;
     for (const object of map) {
-      if (object.animation !== null) continue;
+      if (object.animation !== null) {
+        index += object.instances.length;
+        continue;
+      }
       gl.bindVertexArray(object.pickingVao);
       gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
@@ -323,6 +331,10 @@ function draw() {
     collisions.boxes.forEach(box => box.draw(cam));
     lights.point.forEach(light => light.draw(cam));
   }
+
+  // FIRE BILLBOARD
+  gl.useProgram(billboardShader.program);
+  billboard.draw(cam);
 
   // GUI
   if (cam.getState() === View.FREE) {

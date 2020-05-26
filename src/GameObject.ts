@@ -26,7 +26,7 @@ export default class GameObject {
   scaleUp(factor: number) {
     this.scale = this.scale.map((x: number) => x + factor) as vec3;
   }
-
+  
   getWorldMatrix(radius?: number, duration?: number) {
     const mWorld = mat4.create();
     
