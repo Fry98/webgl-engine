@@ -10,6 +10,7 @@ import Camera from './Camera';
 import config from './config.json';
 import PickingShader from './shaders/PickingShader';
 import GameObject from './GameObject';
+import hardcodedMesh from './HardcodedMesh';
 
 export interface Animation {
   radius: number,
@@ -63,21 +64,36 @@ export default async function loadMap(
 
   const imageProms: Promise<HTMLImageElement>[] = [];
   const skyboxProms: Promise<HTMLImageElement>[] = [];
-  const mesheProms: Promise<Mesh>[] = [];
+  const meshProms: Promise<Mesh>[] = [];
 
   for (const object of map.objects) {
     imageProms.push(loadImage(object.diffuse));
-    mesheProms.push(loadMesh(object.mesh));
+    meshProms.push(loadMesh(object.mesh));
   }
 
   for (const tex of map.skybox) {
     skyboxProms.push(loadImage(tex));
   }
 
+  // Hardcoded Mesh Injection
+  imageProms.push(loadImage("chair2.png"));
+  meshProms.push(Promise.resolve(hardcodedMesh) as Promise<Mesh>);
+  map.objects.push({
+    shininess: 1,
+    specCoef: 0,
+    placement: [
+      {
+        position: [6.7, -4.2, -12],
+        rotation: [0, 95, 0],
+        scale: [1.6, 1.6, 1.6]
+      }
+    ]
+  });
+
   const objects: Map = [];
   const [images, meshes, skybox] = await Promise.all([
     Promise.all(imageProms),
-    Promise.all(mesheProms),
+    Promise.all(meshProms),
     Promise.all(skyboxProms)
   ]);
 
