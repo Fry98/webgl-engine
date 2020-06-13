@@ -1,22 +1,27 @@
 import GuiShader from "./shaders/GuiShader";
+import { mat4, glMatrix, mat2 } from "gl-matrix";
 
 export default class GuiRenderer {
   private gl: WebGL2RenderingContext;
+  private shader: GuiShader;
   private vao: WebGLVertexArrayObject;
   private vertices: number[];
   private vertBuffer: WebGLBuffer;
   private texCoordBuffer: WebGLBuffer;
-  private texture: WebGLTexture;
-  private textureImage: HTMLImageElement;
+  private textureActive: WebGLTexture;
+  private textureIdle: WebGLTexture;
 
-  constructor(gl: WebGL2RenderingContext, shader: GuiShader, texture: HTMLImageElement) {
+  constructor(gl: WebGL2RenderingContext, shader: GuiShader, imageActive: HTMLImageElement, imageIdle: HTMLImageElement) {
+    const SIZE_H = 0.009;
+    const SIZE_V = (SIZE_H / gl.canvas.height) * gl.canvas.width;
+
     this.gl = gl;
-    this.textureImage = texture;
+    this.shader = shader;
     this.vertices = [
-      -0.004, 0.004, 0, 0,
-      0.004, 0.004, 1, 0,
-      -0.004, -0.004, 0, 1,
-      0.004, -0.004, 1, 1
+      -SIZE_H, SIZE_V, 0, 0,
+      SIZE_H, SIZE_V, 1, 0,
+      -SIZE_H, -SIZE_V, 0, 1,
+      SIZE_H, -SIZE_V, 1, 1
     ];
 
     this.vao = gl.createVertexArray();
@@ -48,8 +53,8 @@ export default class GuiRenderer {
     );
     gl.enableVertexAttribArray(shader.attrib.vertTexCoord);
 
-    this.texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    this.textureActive = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.textureActive);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -58,16 +63,34 @@ export default class GuiRenderer {
       gl.TEXTURE_2D,
       0, gl.RGBA, gl.RGBA,
       gl.UNSIGNED_BYTE,
-      this.textureImage
+      imageActive
+    );
+
+    this.textureIdle = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.textureIdle);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0, gl.RGBA, gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      imageIdle
     );
   }
 
-  draw() {
+  draw(cursorIdle = false) {
     this.gl.disable(this.gl.DEPTH_TEST);
     this.gl.bindVertexArray(this.vao);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, cursorIdle ? this.textureIdle : this.textureActive);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer);
+
+    const state = performance.now() / 1000 / 2;
+    const angle = Math.PI * 2 * state;
+    this.gl.uniform1f(this.shader.uniform.rotAngle, angle);
+
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     this.gl.enable(this.gl.DEPTH_TEST);
   }

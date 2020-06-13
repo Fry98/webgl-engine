@@ -7,6 +7,9 @@ export default class GuiShader extends Shader {
     vertPosition: number,
     vertTexCoord: number
   };
+  uniform: {
+    rotAngle: WebGLUniformLocation
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);
@@ -17,6 +20,9 @@ export default class GuiShader extends Shader {
     this.attrib = {
       vertPosition: gl.getAttribLocation(this.program, 'vertPosition'),
       vertTexCoord: gl.getAttribLocation(this.program, 'vertTexCoord')
+    };
+    this.uniform = {
+      rotAngle: gl.getUniformLocation(this.program, 'rotAngle')
     };
   }
 }

@@ -40,7 +40,8 @@ const flashlightInnerCutoff = Math.cos(glMatrix.toRadian(config.flashlight.inner
 const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer));
 let flashlightOn = false;
 let isPicking = false;
-let pickedIndex: number = 0;
+let pickedIndex = 0;
+let pickedHover = false;
 let pickedObject: GameObject = null;
 let cam: Camera = null;
 let map: Map = null;
@@ -73,7 +74,7 @@ async function main() {
     };
       
     billboard = new Billboard(gl, billboardShader, await loadImage("fire.png"));
-    guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor.png'));
+    guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor_active.png'), await loadImage('cursor_idle.png'));
     loading.style.display = 'none';
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
@@ -266,60 +267,59 @@ function draw() {
   }
 
   // PICKING FRAMEBUFFER DRAW
-  if (isPicking) {
-    isPicking = false;
-    gl.useProgram(pickingShader.program);
-    gl.disable(gl.BLEND);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
+  gl.useProgram(pickingShader.program);
+  gl.disable(gl.BLEND);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
 
-    const indexedObjects: {
-      [K: number]: GameObject
-    } = {};
-    index = 1;
-    for (const object of map) {
-      if (object.animation !== null) {
-        index += object.instances.length;
-        continue;
-      }
-      gl.bindVertexArray(object.pickingVao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
-      for (const instance of object.instances) {
-        const color: vec4 = [
-          ((index >> 0) & 0xFF) / 0xFF,
-          ((index >> 8) & 0xFF) / 0xFF,
-          ((index >> 16) & 0xFF) / 0xFF,
-          ((index >> 24) & 0xFF) / 0xFF
-        ];
-
-        gl.uniform4fv(pickingShader.uniform.color, color);
-        gl.uniformMatrix4fv(pickingShader.uniform.mWorld, false, instance.getWorldMatrix());
-        gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
-        indexedObjects[index] = instance;
-        index++;
-      }
+  const indexedObjects: {
+    [K: number]: GameObject
+  } = {};
+  index = 1;
+  for (const object of map) {
+    if (object.animation !== null) {
+      index += object.instances.length;
+      continue;
     }
+    gl.bindVertexArray(object.pickingVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
+    for (const instance of object.instances) {
+      const color: vec4 = [
+        ((index >> 0) & 0xFF) / 0xFF,
+        ((index >> 8) & 0xFF) / 0xFF,
+        ((index >> 16) & 0xFF) / 0xFF,
+        ((index >> 24) & 0xFF) / 0xFF
+      ];
 
-    const data = new Uint8Array(4);
-    gl.readPixels(
-      Math.floor(canv.width / 2),
-      Math.floor(canv.height / 2),
-      1, 1,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      data
-    );
-    const clickedIndex = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
-    if (clickedIndex !== pickedIndex) {
-      pickedIndex = clickedIndex;
-      pickedObject = indexedObjects[pickedIndex];
+      gl.uniform4fv(pickingShader.uniform.color, color);
+      gl.uniformMatrix4fv(pickingShader.uniform.mWorld, false, instance.getWorldMatrix());
+      gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
+      indexedObjects[index] = instance;
+      index++;
     }
-
-    gl.enable(gl.BLEND);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
+
+  const data = new Uint8Array(4);
+  gl.readPixels(
+    Math.floor(canv.width / 2),
+    Math.floor(canv.height / 2),
+    1, 1,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    data
+  );
+  const clickedIndex = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
+  if (clickedIndex !== pickedIndex && isPicking) {
+    pickedIndex = clickedIndex;
+    pickedObject = indexedObjects[pickedIndex];
+  }
+
+  isPicking = false;
+  pickedHover = pickedIndex !== 0 && clickedIndex === pickedIndex;
+  gl.enable(gl.BLEND);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   // SKYBOX
   gl.useProgram(skyboxShader.program);
@@ -339,7 +339,7 @@ function draw() {
   // GUI
   if (cam.getState() === View.FREE) {
     gl.useProgram(guiShader.program);
-    guiRenderer.draw();
+    guiRenderer.draw(pickedHover);
   }
 }
 
