@@ -19,4 +19,14 @@
   transform: translate(-50%, -50%);
   z-index: 1;
   color: rgb(160, 158, 158);
+  pointer-events: none;
+}
+
+.reload > #loading {
+  display: block !important;
+  color: white;
+}
+
+.reload #canv {
+  filter: blur(2px) grayscale(0.5);
 }

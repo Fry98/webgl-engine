@@ -42,6 +42,7 @@ let flashlightOn = false;
 let isPicking = false;
 let pickedIndex = 0;
 let pickedHover = false;
+let reloadState = false;
 let pickedObject: GameObject = null;
 let cam: Camera = null;
 let map: Map = null;
@@ -56,26 +57,11 @@ main();
 // MAIN FUNCTION
 async function main() {
   try {
-    const loaded = await loadMap(
-      gl, 'map.json',
-      defaultShader,
-      skyboxShader,
-      colliderShader,
-      pickingShader
-    );
-    cam = loaded.camera;
-    map = loaded.objects;
-    skybox = loaded.skybox;
-    lights = loaded.lights;
-    fog = loaded.fog;
-    collisions = {
-      draw: false,
-      boxes: loaded.boxes
-    };
-      
+    await init();
     billboard = new Billboard(gl, billboardShader, await loadImage("fire.png"));
     guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor_active.png'), await loadImage('cursor_idle.png'));
     loading.style.display = 'none';
+
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -88,11 +74,49 @@ async function main() {
   }
 }
 
+async function init() {
+  const loaded = await loadMap(
+    gl, 'map.json',
+    defaultShader,
+    skyboxShader,
+    colliderShader,
+    pickingShader
+  );
+  cam = loaded.camera;
+  map = loaded.objects;
+  skybox = loaded.skybox;
+  lights = loaded.lights;
+  fog = loaded.fog;
+  collisions = {
+    draw: false,
+    boxes: loaded.boxes
+  };
+}
+
+async function reset() {
+  document.body.classList.add('reload');
+  await init();
+
+  flashlightOn = false;
+  reloadState = false;
+  isPicking = false;
+  pickedIndex = 0;
+  mouse.reset();
+  
+  document.body.classList.remove('reload');
+  requestAnimationFrame(loop);
+}
+
 // GAME LOOP
-function loop() {
+async function loop() {
   update();
   draw();
-  requestAnimationFrame(loop);
+
+  if (reloadState) {
+    reset();
+  } else {
+    requestAnimationFrame(loop);
+  }
 }
 
 // UPDATE FUNCTION
@@ -127,6 +151,18 @@ function update() {
 
   if (KeyMap[32]) {
     cam.moveUp(0.7);
+  }
+
+  // MOUSE CONTROLS
+  const mouseMove = mouse.getMovement();
+  if (mouseMove.x !== 0) {
+    cam.rotateRight(mouseMove.x / 100);
+    mouseMove.x = 0;
+  }
+
+  if (mouseMove.y !== 0) {
+    cam.rotateUp(-mouseMove.y / 100);
+    mouseMove.y = 0;
   }
 
   // SCENE TRANSFORM
@@ -179,18 +215,6 @@ function update() {
     if (box.isColliding(cam)) cam.revert();
   });
   cam.persist();
-
-  // MOUSE CONTROLS
-  const mouseMove = mouse.getMovement();
-  if (mouseMove.x !== 0) {
-    cam.rotateRight(mouseMove.x / 100);
-    mouseMove.x = 0;
-  }
-
-  if (mouseMove.y !== 0) {
-    cam.rotateUp(-mouseMove.y / 100);
-    mouseMove.y = 0;
-  }
 }
 
 // DRAW FUNCTION
@@ -354,6 +378,9 @@ document.addEventListener('keydown', e => {
       break;
     case 69:
       cam.switchView();
+      break;
+    case 82:
+      reloadState = true;
       break;
   }
 });

@@ -79,7 +79,6 @@ export default class Billboard {
       0, 0, 1, camPos[11],
       camPos[12], camPos[13], camPos[14], camPos[15]
     );
-    // mat4.translate(mNoRotation, mNoRotation, [-10, -3.5, -10]);
     mat4.multiply(mNoRotation, cam.getProjectionMatrix(), mNoRotation);
     
     // Animation frame
