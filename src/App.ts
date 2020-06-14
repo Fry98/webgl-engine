@@ -349,22 +349,24 @@ function draw() {
   gl.useProgram(skyboxShader.program);
   skybox.draw(cam);
 
-  // DEBUG VIEW
-  if (collisions.draw) {
-    gl.useProgram(colliderShader.program);
-    collisions.boxes.forEach(box => box.draw(cam));
-    lights.point.forEach(light => light.draw(cam));
-  }
-
-  // FIRE BILLBOARD
-  gl.useProgram(billboardShader.program);
-  billboard.draw(cam);
-
   // GUI
   if (cam.getState() === View.FREE) {
     gl.useProgram(guiShader.program);
     guiRenderer.draw(pickedHover);
   }
+
+  // DEBUG VIEW
+  if (collisions.draw) {
+    gl.depthMask(false);
+    gl.useProgram(colliderShader.program);
+    lights.point.forEach(light => light.draw(cam));
+    collisions.boxes.forEach(box => box.draw(cam));
+    gl.depthMask(true);
+  }
+
+  // FIRE BILLBOARD
+  gl.useProgram(billboardShader.program);
+  billboard.draw(cam);
 }
 
 // KEYBOARD LISTENER

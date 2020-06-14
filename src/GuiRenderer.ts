@@ -12,7 +12,7 @@ export default class GuiRenderer {
   private textureIdle: WebGLTexture;
 
   constructor(gl: WebGL2RenderingContext, shader: GuiShader, imageActive: HTMLImageElement, imageIdle: HTMLImageElement) {
-    const SIZE_H = 0.009;
+    const SIZE_H = 0.012;
     const SIZE_V = (SIZE_H / gl.canvas.height) * gl.canvas.width;
 
     this.gl = gl;
@@ -87,10 +87,23 @@ export default class GuiRenderer {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer);
 
-    const state = performance.now() / 1000 / 2;
-    const angle = Math.PI * 2 * state;
-    this.gl.uniform1f(this.shader.uniform.rotAngle, angle);
+    const mAnim = mat2.create();
 
+    if (cursorIdle) {
+      // Rotation
+      const state = performance.now() / 1000 / 2;
+      const angle = Math.PI * 2 * state;
+      mat2.rotate(mAnim, mAnim, angle);
+  
+      // Size
+      const sizeState = (Math.cos(angle) + 1) / 2;
+      const size = 1.0 + (0.25 * sizeState);
+      mat2.scale(mAnim, mAnim, [size, size]);
+    } else {
+      mat2.scale(mAnim, mAnim, [1.2, 1.2]);
+    }
+
+    this.gl.uniformMatrix2fv(this.shader.uniform.mAnim, false, mAnim);
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     this.gl.enable(this.gl.DEPTH_TEST);
   }
