@@ -357,9 +357,9 @@ function draw() {
 
   // DEBUG VIEW
   if (collisions.draw) {
-    gl.depthMask(false);
     gl.useProgram(colliderShader.program);
     lights.point.forEach(light => light.draw(cam));
+    gl.depthMask(false);
     collisions.boxes.forEach(box => box.draw(cam));
     gl.depthMask(true);
   }
