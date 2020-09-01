@@ -1,5 +1,5 @@
 import GuiShader from "./shaders/GuiShader";
-import { mat4, glMatrix, mat2 } from "gl-matrix";
+import { mat2 } from "gl-matrix";
 
 export default class GuiRenderer {
   private gl: WebGL2RenderingContext;
@@ -94,7 +94,7 @@ export default class GuiRenderer {
       const state = performance.now() / 1000 / 2;
       const angle = Math.PI * 2 * state;
       mat2.rotate(mAnim, mAnim, angle);
-  
+
       // Size
       const sizeState = (Math.cos(angle) + 1) / 2;
       const size = 1.0 + (0.25 * sizeState);
