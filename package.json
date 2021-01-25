@@ -9,7 +9,7 @@
     "dev": "rimraf dist/* && concurrently \"rollup -c -w\" \"live-server --port=8080 dist\""
   },
   "author": "Fry98",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "gl-matrix": "^3.2.1",
     "webgl-obj-loader": "^2.0.6"
