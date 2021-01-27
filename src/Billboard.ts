@@ -66,7 +66,7 @@ export default class Billboard {
   }
 
   draw(cam: Camera) {
-    
+
     // No Rotation Matrix
     const mWorld = mat4.create();
     mat4.translate(mWorld, mWorld, this.position);
@@ -80,7 +80,7 @@ export default class Billboard {
       camPos[12], camPos[13], camPos[14], camPos[15]
     );
     mat4.multiply(mNoRotation, cam.getProjectionMatrix(), mNoRotation);
-    
+
     // Animation frame
     const frame = Math.round((performance.now() / 1000) * 17 * 1.8) % 18;
     const texTileX = frame % 4;

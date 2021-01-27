@@ -16,15 +16,24 @@ import PickingShader from './shaders/PickingShader';
 import GameObject from './GameObject';
 import Billboard from './Billboard';
 import BillboardShader from './shaders/BillboardShader';
+import PostprocessShader from './shaders/PostprocessShader';
+import PostProcessor from './PostProcessor';
 
 // DOM SETUP
 const canv = document.getElementById('canv') as HTMLCanvasElement;
 const loading = document.getElementById('loading');
 const gl = canv.getContext('webgl2');
-const frameBuffer = gl.createFramebuffer();
-const fbTexture = gl.createTexture();
+const pickingBuffer = gl.createFramebuffer();
+const pickingTexture = gl.createTexture();
+const pickingDepthBuffer = gl.createRenderbuffer();
+const postproBuffer = gl.createFramebuffer();
+const postproTexture = gl.createTexture();
+const postproDethBuffer = gl.createRenderbuffer();
 canv.onclick = () => canv.requestPointerLock();
-viewport(gl, frameBuffer, fbTexture);
+viewport(gl, [
+  [pickingBuffer, pickingTexture, pickingDepthBuffer],
+  [postproBuffer, postproTexture, postproDethBuffer]
+]);
 
 // SHADERS
 const defaultShader = new DefaultShader(gl);
@@ -33,9 +42,11 @@ const colliderShader = new ColliderShader(gl);
 const guiShader = new GuiShader(gl);
 const pickingShader = new PickingShader(gl);
 const billboardShader = new BillboardShader(gl);
+const postprocessShader = new PostprocessShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
+const postProcessor = new PostProcessor(gl, postprocessShader, postproTexture);
 const flashlightInnerCutoff = Math.cos(glMatrix.toRadian(config.flashlight.inner));
 const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer));
 let flashlightOn = false;
@@ -102,7 +113,7 @@ async function reset() {
   isPicking = false;
   pickedIndex = 0;
   mouse.reset();
-  
+
   document.body.classList.remove('reload');
   requestAnimationFrame(loop);
 }
@@ -220,87 +231,17 @@ function update() {
 // DRAW FUNCTION
 function draw() {
 
-  // CLEAR SCREEN
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // ENVIROMENT
-  gl.useProgram(defaultShader.program);
-
-  // Flashlight
-  gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
-  gl.uniform3fv(defaultShader.uniform.cameraDir, cam.getDirection());
-  gl.uniform1i(defaultShader.uniform.flashlightOn, flashlightOn ? 1 : 0);
-  gl.uniform3fv(defaultShader.uniform.flashlightColor, config.flashlight.color);
-  gl.uniform3fv(defaultShader.uniform.flashAttenParams, config.flashlight.atten);
-  gl.uniform1f(defaultShader.uniform.flashlightInnerCutoff, flashlightInnerCutoff);
-  gl.uniform1f(defaultShader.uniform.flashlightOuterCutoff, flashlightOuterCutoff);
-
-  // Transformation Matrices
-  gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
-  gl.uniformMatrix4fv(defaultShader.uniform.mProjection, false, cam.getProjectionMatrix());
-
-  // Directional Light
-  gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
-  gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
-  gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
-
-  // Point Light
-  gl.uniform1i(defaultShader.uniform.lightCount, lights.point.length);
-  for (let i = 0; i < lights.point.length; i++) {
-    gl.uniform3fv(defaultShader.uniform.lights[i].pos, lights.point[i].position);
-    gl.uniform3fv(defaultShader.uniform.lights[i].color, lights.point[i].color);
-    gl.uniform3fv(defaultShader.uniform.lights[i].atten, lights.point[i].attenuation);
-  }
-
-  // Fog
-  gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
-  gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
-
-  // RENDERBUFFER DRAW
-  let index = 1;
-  for (const object of map) {
-
-    // Mesh
-    gl.bindVertexArray(object.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
-    gl.bindBuffer(gl.ARRAY_BUFFER, object.vertNormals);
-
-    // Texture
-    gl.bindBuffer(gl.ARRAY_BUFFER, object.texCoords);
-    gl.bindTexture(gl.TEXTURE_2D, object.texture);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
-
-    // Specular Lighting
-    gl.uniform1f(defaultShader.uniform.shininess, object.shininess);
-    gl.uniform1f(defaultShader.uniform.specCoef, object.specCoef);
-
-    // Draw
-    for (const instance of object.instances) {
-      let mWorld: mat4;
-      if (object.animation === null) {
-        mWorld = instance.getWorldMatrix();
-      } else {
-        mWorld = instance.getWorldMatrix(object.animation.radius, object.animation.duration);
-      }
-
-      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, mWorld);
-      gl.uniform1i(defaultShader.uniform.picked, index === pickedIndex ? 1 : 0);
-      gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
-      index++;
-    }
-  }
-
   // PICKING FRAMEBUFFER DRAW
   gl.useProgram(pickingShader.program);
   gl.disable(gl.BLEND);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, pickingBuffer);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
 
   const indexedObjects: {
     [K: number]: GameObject
   } = {};
-  index = 1;
+  let index = 1;
   for (const object of map) {
     if (object.animation !== null) {
       index += object.instances.length;
@@ -342,8 +283,77 @@ function draw() {
 
   isPicking = false;
   pickedHover = pickedIndex !== 0 && clickedIndex === pickedIndex;
+
+  // POSTPROCESS FRAMEBUFFER SETUP
+  gl.bindFramebuffer(gl.FRAMEBUFFER, postproBuffer);
   gl.enable(gl.BLEND);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(defaultShader.program);
+
+  // Flashlight
+  gl.uniform3fv(defaultShader.uniform.cameraPos, cam.getPosition());
+  gl.uniform3fv(defaultShader.uniform.cameraDir, cam.getDirection());
+  gl.uniform1i(defaultShader.uniform.flashlightOn, flashlightOn ? 1 : 0);
+  gl.uniform3fv(defaultShader.uniform.flashlightColor, config.flashlight.color);
+  gl.uniform3fv(defaultShader.uniform.flashAttenParams, config.flashlight.atten);
+  gl.uniform1f(defaultShader.uniform.flashlightInnerCutoff, flashlightInnerCutoff);
+  gl.uniform1f(defaultShader.uniform.flashlightOuterCutoff, flashlightOuterCutoff);
+
+  // Transformation Matrices
+  gl.uniformMatrix4fv(defaultShader.uniform.mView, false, cam.getViewMatrix());
+  gl.uniformMatrix4fv(defaultShader.uniform.mProjection, false, cam.getProjectionMatrix());
+
+  // Directional Light
+  gl.uniform3fv(defaultShader.uniform.ambient, lights.ambient);
+  gl.uniform3fv(defaultShader.uniform.sunInt, lights.directional.intensity);
+  gl.uniform3fv(defaultShader.uniform.sunPos, lights.directional.position);
+
+  // Point Light
+  gl.uniform1i(defaultShader.uniform.lightCount, lights.point.length);
+  for (let i = 0; i < lights.point.length; i++) {
+    gl.uniform3fv(defaultShader.uniform.lights[i].pos, lights.point[i].position);
+    gl.uniform3fv(defaultShader.uniform.lights[i].color, lights.point[i].color);
+    gl.uniform3fv(defaultShader.uniform.lights[i].atten, lights.point[i].attenuation);
+  }
+
+  // Fog
+  gl.uniform1f(defaultShader.uniform.fogDensity, fog.density);
+  gl.uniform3fv(defaultShader.uniform.fogColor, fog.color);
+
+  // POSTPROCESS FRAMEBUFFER DRAW
+  index = 1;
+  for (const object of map) {
+
+    // Mesh
+    gl.bindVertexArray(object.vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, object.vertPos);
+    gl.bindBuffer(gl.ARRAY_BUFFER, object.vertNormals);
+
+    // Texture
+    gl.bindBuffer(gl.ARRAY_BUFFER, object.texCoords);
+    gl.bindTexture(gl.TEXTURE_2D, object.texture);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.indicies);
+
+    // Specular Lighting
+    gl.uniform1f(defaultShader.uniform.shininess, object.shininess);
+    gl.uniform1f(defaultShader.uniform.specCoef, object.specCoef);
+
+    // Draw
+    for (const instance of object.instances) {
+      let mWorld: mat4;
+      if (object.animation === null) {
+        mWorld = instance.getWorldMatrix();
+      } else {
+        mWorld = instance.getWorldMatrix(object.animation.radius, object.animation.duration);
+      }
+
+      gl.uniformMatrix4fv(defaultShader.uniform.mWorld, false, mWorld);
+      gl.uniform1i(defaultShader.uniform.picked, index === pickedIndex ? 1 : 0);
+      gl.drawElements(gl.TRIANGLES, object.indexCount, gl.UNSIGNED_SHORT, 0);
+      index++;
+    }
+  }
 
   // SKYBOX
   gl.useProgram(skyboxShader.program);
@@ -367,6 +377,12 @@ function draw() {
   // FIRE BILLBOARD
   gl.useProgram(billboardShader.program);
   billboard.draw(cam);
+
+  // RENDERBUFFER DRAW
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.useProgram(postprocessShader.program);
+  postProcessor.draw();
 }
 
 // KEYBOARD LISTENER

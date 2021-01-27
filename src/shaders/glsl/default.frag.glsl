@@ -88,7 +88,7 @@ void main() {
 
   // Picked highlight
   if (picked) {
-    vec4 highlightColor = vec4(0.0, 1.0, 0.0, 1.0);
-    outColor = mix(outColor, highlightColor, 0.3);
+    vec4 highlightColor = vec4(1.0, 1.0, 1.0, 1.0);
+    outColor = mix(outColor, highlightColor, 0.4);
   }
 }
