@@ -46,7 +46,6 @@ const postprocessShader = new PostprocessShader(gl);
 
 // DECLARATIONS
 const mouse = new MouseTracker(canv);
-const postProcessor = new PostProcessor(gl, postprocessShader, postproTexture);
 const flashlightInnerCutoff = Math.cos(glMatrix.toRadian(config.flashlight.inner));
 const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer));
 let flashlightOn = false;
@@ -63,6 +62,7 @@ let fog: Fog = null;
 let collisions: Collisions = null;
 let guiRenderer: GuiRenderer = null;
 let billboard: Billboard = null;
+let postProcessor: PostProcessor = null;
 main();
 
 // MAIN FUNCTION
@@ -70,7 +70,16 @@ async function main() {
   try {
     await init();
     billboard = new Billboard(gl, billboardShader, await loadImage("fire.png"));
-    guiRenderer = new GuiRenderer(gl, guiShader, await loadImage('cursor_active.png'), await loadImage('cursor_idle.png'));
+    guiRenderer = new GuiRenderer(
+      gl, guiShader,
+      await loadImage('cursor_active.png'),
+      await loadImage('cursor_idle.png')
+    );
+    postProcessor = new PostProcessor(
+      gl, postprocessShader,
+      postproTexture,
+      await loadImage('blue_noise_rgba_64.png')
+    );
     loading.style.display = 'none';
 
     gl.enable(gl.DEPTH_TEST);

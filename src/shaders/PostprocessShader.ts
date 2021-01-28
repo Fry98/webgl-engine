@@ -18,5 +18,9 @@ export default class BillboardShader extends Shader {
       vertPosition: gl.getAttribLocation(this.program, 'vertPosition'),
       vertTexCoord: gl.getAttribLocation(this.program, 'vertTexCoord'),
     };
+    this.uniform = {
+      noise: gl.getUniformLocation(this.program, 'noise'),
+      noiseChannel: gl.getUniformLocation(this.program, 'noiseChannel')
+    };
   }
 }

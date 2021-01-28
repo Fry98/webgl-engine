@@ -3,12 +3,21 @@ import PostprocessShader from "./shaders/PostprocessShader";
 export default class Billboard {
   private vao: WebGLVertexArrayObject;
   private vertBuffer: WebGLBuffer;
+  private noiseTex: WebGLTexture;
   private texture: WebGLTexture;
   private gl: WebGL2RenderingContext;
+  private shader: PostprocessShader;
+  private noiseChannel = 0;
 
-  constructor(gl: WebGL2RenderingContext, shader: PostprocessShader, postproTex: WebGLTexture) {
+  constructor(
+    gl: WebGL2RenderingContext,
+    shader: PostprocessShader,
+    postproTex: WebGLTexture,
+    blueNoise: HTMLImageElement
+  ) {
     this.gl = gl;
     this.texture = postproTex;
+    this.shader = shader;
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
 
@@ -42,12 +51,34 @@ export default class Billboard {
       2 * Float32Array.BYTES_PER_ELEMENT
     );
     gl.enableVertexAttribArray(shader.attrib.vertTexCoord);
+
+    this.noiseTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.noiseTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0, gl.RGBA, gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      blueNoise
+    );
   }
 
   draw() {
+    // Update noise channel
+    if (++this.noiseChannel > 3) this.noiseChannel = 0;
+
+    // Setup and draw
     this.gl.bindVertexArray(this.vao);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+    this.gl.activeTexture(this.gl.TEXTURE1);
+    this.gl.uniform1i(this.shader.uniform.noise, 1);
+    this.gl.uniform1i(this.shader.uniform.noiseChannel, this.noiseChannel);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.noiseTex);
+    this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
   }
 }
