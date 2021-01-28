@@ -95,15 +95,12 @@ export default class Billboard {
 
     this.gl.bindVertexArray(this.vao);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
-
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
 
     this.gl.activeTexture(this.gl.TEXTURE1);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.noiseTex);
 
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-
     this.gl.activeTexture(this.gl.TEXTURE0);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, null);
   }
 }
