@@ -10,7 +10,7 @@ export default class ColliderShader extends Shader {
     mViewProjection: WebGLUniformLocation,
     mWorld: WebGLUniformLocation,
     color: WebGLUniformLocation
-  }
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);

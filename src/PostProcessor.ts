@@ -72,7 +72,7 @@ export default class Billboard {
     );
   }
 
-  draw() {
+  draw(mode: number) {
     // Update noise channel
     if (++this.noiseChannel > 3) this.noiseChannel = 0;
 
@@ -91,6 +91,7 @@ export default class Billboard {
     // Setup and draw
     this.gl.uniform1i(this.shader.uniform.noise, 1);
     this.gl.uniform1i(this.shader.uniform.noiseChannel, this.noiseChannel);
+    this.gl.uniform1i(this.shader.uniform.mode, mode);
 
     this.gl.bindVertexArray(this.vao);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);

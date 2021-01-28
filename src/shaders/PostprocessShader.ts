@@ -7,6 +7,11 @@ export default class BillboardShader extends Shader {
     vertPosition: number,
     vertTexCoord: number
   };
+  uniform: {
+    noise: WebGLUniformLocation,
+    noiseChannel: WebGLUniformLocation,
+    mode: WebGLUniformLocation
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);
@@ -20,7 +25,8 @@ export default class BillboardShader extends Shader {
     };
     this.uniform = {
       noise: gl.getUniformLocation(this.program, 'noise'),
-      noiseChannel: gl.getUniformLocation(this.program, 'noiseChannel')
+      noiseChannel: gl.getUniformLocation(this.program, 'noiseChannel'),
+      mode: gl.getUniformLocation(this.program, 'mode')
     };
   }
 }

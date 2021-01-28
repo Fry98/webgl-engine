@@ -9,7 +9,7 @@ export default class SkyboxShader extends Shader {
   uniform: {
     mView: WebGLUniformLocation,
     mProjection: WebGLUniformLocation
-  }
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);

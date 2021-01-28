@@ -6,10 +6,11 @@ in vec2 fragTexCoord;
 out vec4 outColor;
 
 uniform int noiseChannel;
+uniform int mode;
 uniform sampler2D smp;
 uniform sampler2D noise;
 
-void main() {
+void dither() {
   vec4 diffColor = texture(smp, fragTexCoord);
   float avg = (diffColor.r + diffColor.g + diffColor.b) / 3.0;
 
@@ -34,5 +35,27 @@ void main() {
     outColor = vec4(1.0, 1.0, 1.0, 1.0);
   } else {
     outColor = vec4(0.0, 0.0, 0.0, 1.0);
+  }
+}
+
+void rgb_split() {
+  float red = texture(smp, vec2(fragTexCoord.x, fragTexCoord.y - 0.002)).r;
+  float green = texture(smp, vec2(fragTexCoord.x + 0.0005, fragTexCoord.y)).g;
+  float blue = texture(smp, vec2(fragTexCoord.x, fragTexCoord.y)).b;
+  float alpha = texture(smp, vec2(fragTexCoord.x, fragTexCoord.y)).a;
+  outColor = vec4(red, green, blue, alpha);
+}
+
+void main() {
+  switch (mode) {
+    case 0:
+      outColor = texture(smp, fragTexCoord);
+      break;
+    case 1:
+      rgb_split();
+      break;
+    case 2:
+      dither();
+      break;
   }
 }

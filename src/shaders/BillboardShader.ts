@@ -9,7 +9,7 @@ export default class BillboardShader extends Shader {
   };
   uniform: {
     mViewProjection: WebGLUniformLocation
-  }
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);

@@ -35,7 +35,7 @@ export default class DefaultShader extends Shader {
     flashlightOuterCutoff: WebGLUniformLocation,
     picked: WebGLUniformLocation,
     lights: PointLight[]
-  }
+  };
 
   constructor(gl: WebGL2RenderingContext) {
     super(gl, vert, frag);

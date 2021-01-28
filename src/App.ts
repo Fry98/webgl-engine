@@ -54,6 +54,7 @@ const flashlightOuterCutoff = Math.cos(glMatrix.toRadian(config.flashlight.outer
 let flashlightOn = false;
 let isPicking = false;
 let pickedIndex = 0;
+let postproMode = 0;
 let pickedHover = false;
 let reloadState = false;
 let pickedObject: GameObject = null;
@@ -126,6 +127,7 @@ async function reset() {
   reloadState = false;
   isPicking = false;
   pickedIndex = 0;
+  postproMode = 0;
   mouse.reset();
 
   document.body.classList.remove('reload');
@@ -396,7 +398,7 @@ function draw() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.useProgram(postprocessShader.program);
-  postProcessor.draw();
+  postProcessor.draw(postproMode);
 }
 
 // KEYBOARD LISTENER
@@ -410,6 +412,9 @@ document.addEventListener('keydown', e => {
       break;
     case 69:
       cam.switchView();
+      break;
+    case 77:
+      if (++postproMode > 2) postproMode = 0;
       break;
     case 82:
       reloadState = true;
