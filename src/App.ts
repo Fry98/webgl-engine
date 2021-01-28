@@ -23,17 +23,20 @@ import PostProcessor from './PostProcessor';
 const canv = document.getElementById('canv') as HTMLCanvasElement;
 const loading = document.getElementById('loading');
 const gl = canv.getContext('webgl2');
-const pickingBuffer = gl.createFramebuffer();
-const pickingTexture = gl.createTexture();
-const pickingDepthBuffer = gl.createRenderbuffer();
-const postproBuffer = gl.createFramebuffer();
-const postproTexture = gl.createTexture();
-const postproDethBuffer = gl.createRenderbuffer();
+const pickingBuffers = {
+  colorFrameBuffer: gl.createFramebuffer(),
+  colorBuffer: gl.createTexture(),
+  zBuffer: gl.createRenderbuffer()
+};
+const postproBuffers = {
+  colorFrameBuffer: gl.createFramebuffer(),
+  colorBuffer: gl.createTexture(),
+  renderFrameBuffer: gl.createFramebuffer(),
+  renderBuffer: gl.createRenderbuffer(),
+  zBuffer: gl.createRenderbuffer()
+};
 canv.onclick = () => canv.requestPointerLock();
-viewport(gl, [
-  [pickingBuffer, pickingTexture, pickingDepthBuffer],
-  [postproBuffer, postproTexture, postproDethBuffer]
-]);
+viewport(gl, [pickingBuffers, postproBuffers]);
 
 // SHADERS
 const defaultShader = new DefaultShader(gl);
@@ -77,7 +80,9 @@ async function main() {
     );
     postProcessor = new PostProcessor(
       gl, postprocessShader,
-      postproTexture,
+      postproBuffers.colorBuffer,
+      postproBuffers.renderFrameBuffer,
+      postproBuffers.colorFrameBuffer,
       await loadImage('blue_noise_rgba_64.png')
     );
     loading.style.display = 'none';
@@ -243,7 +248,7 @@ function draw() {
   // PICKING FRAMEBUFFER DRAW
   gl.useProgram(pickingShader.program);
   gl.disable(gl.BLEND);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, pickingBuffer);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, pickingBuffers.colorFrameBuffer);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.uniformMatrix4fv(pickingShader.uniform.mViewProjection, false, cam.getViewProjectionMatrix());
 
@@ -294,7 +299,7 @@ function draw() {
   pickedHover = pickedIndex !== 0 && clickedIndex === pickedIndex;
 
   // POSTPROCESS FRAMEBUFFER SETUP
-  gl.bindFramebuffer(gl.FRAMEBUFFER, postproBuffer);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, postproBuffers.renderFrameBuffer);
   gl.enable(gl.BLEND);
   gl.enable(gl.DEPTH_TEST);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

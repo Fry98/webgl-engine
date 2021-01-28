@@ -5,6 +5,8 @@ export default class Billboard {
   private vertBuffer: WebGLBuffer;
   private noiseTex: WebGLTexture;
   private texture: WebGLTexture;
+  private renderFrameBuffer: WebGLFramebuffer;
+  private colorFrameBuffer: WebGLFramebuffer;
   private gl: WebGL2RenderingContext;
   private shader: PostprocessShader;
   private noiseChannel = 0;
@@ -13,11 +15,15 @@ export default class Billboard {
     gl: WebGL2RenderingContext,
     shader: PostprocessShader,
     postproTex: WebGLTexture,
+    renderFrameBuffer: WebGLFramebuffer,
+    colorFrameBuffer: WebGLFramebuffer,
     blueNoise: HTMLImageElement
   ) {
     this.gl = gl;
     this.texture = postproTex;
     this.shader = shader;
+    this.renderFrameBuffer = renderFrameBuffer;
+    this.colorFrameBuffer = colorFrameBuffer;
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
 
@@ -70,15 +76,33 @@ export default class Billboard {
     // Update noise channel
     if (++this.noiseChannel > 3) this.noiseChannel = 0;
 
+    // Blit renderBuffer to colorBuffer
+    this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, this.renderFrameBuffer);
+    this.gl.bindFramebuffer(this.gl.DRAW_FRAMEBUFFER, this.colorFrameBuffer);
+    this.gl.blitFramebuffer(
+      0, 0, this.gl.canvas.width, this.gl.canvas.height,
+      0, 0, this.gl.canvas.width, this.gl.canvas.height,
+      this.gl.COLOR_BUFFER_BIT, this.gl.NEAREST
+    );
+    this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, null);
+    this.gl.bindFramebuffer(this.gl.DRAW_FRAMEBUFFER, null);
+
+
     // Setup and draw
-    this.gl.bindVertexArray(this.vao);
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
-    this.gl.activeTexture(this.gl.TEXTURE1);
     this.gl.uniform1i(this.shader.uniform.noise, 1);
     this.gl.uniform1i(this.shader.uniform.noiseChannel, this.noiseChannel);
+
+    this.gl.bindVertexArray(this.vao);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertBuffer);
+
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+
+    this.gl.activeTexture(this.gl.TEXTURE1);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.noiseTex);
-    this.gl.activeTexture(this.gl.TEXTURE0);
+
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, null);
   }
 }
