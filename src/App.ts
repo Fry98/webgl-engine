@@ -1,10 +1,7 @@
 // IMPORTS
-import { glMatrix, mat4 } from 'gl-matrix';
-import KeyMap from './Keymap';
-import Camera, { View } from './Camera';
+import { mat4 } from 'gl-matrix';
 import DefaultShader from './shaders/DefaultShader';
-import MouseTracker from './MouseTracker';
-import loadMap, { Map, LightMap, Fog, Collisions, loadImage } from './MapLoader';
+import loadMap, { Map, LightMap, Fog, loadImage } from './MapLoader';
 import Skybox from './Skybox';
 import SkyboxShader from './shaders/SkyboxShader';
 import ColliderShader from './shaders/ColliderShader';
@@ -28,12 +25,10 @@ const colliderShader = new ColliderShader(gl);
 const billboardShader = new BillboardShader(gl);
 
 // DECLARATIONS
-const mouse = new MouseTracker(canv);
 let map: Map = null;
 let skybox: Skybox = null;
 let lights: LightMap = null;
 let fog: Fog = null;
-let collisions: Collisions = null;
 let billboard: Billboard = null;
 let xrSession: any = null;
 let xrReferenceSpace: any = null;
@@ -83,10 +78,6 @@ async function init() {
   skybox = loaded.skybox;
   lights = loaded.lights;
   fog = loaded.fog;
-  collisions = {
-    draw: false,
-    boxes: loaded.boxes
-  };
 }
 
 // GAME LOOP
