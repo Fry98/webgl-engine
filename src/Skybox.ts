@@ -49,9 +49,9 @@ export default class Skybox {
     this.texture = skyboxTex;
   }
 
-  draw(cam: Camera) {
-    const mView = cam.getViewMatrix();
-    const mProj = cam.getProjectionMatrix();
+  draw(view: any) {
+    const mView = view.transform.inverse.matrix;
+    const mProj = view.projectionMatrix;
     const mViewNoTrans = mat4.fromValues(
       mView[0], mView[1], mView[2], 0,
       mView[4], mView[5], mView[6], 0,

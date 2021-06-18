@@ -8,7 +8,6 @@ import ColliderShader from './shaders/ColliderShader';
 import { PointLight } from './PointLight';
 import Camera from './Camera';
 import config from './config.json';
-import PickingShader from './shaders/PickingShader';
 import GameObject from './GameObject';
 import hardcodedMesh from './HardcodedMesh';
 
@@ -19,7 +18,6 @@ export interface Animation {
 
 export type Map = {
   vao: WebGLVertexArrayObject,
-  pickingVao: WebGLVertexArrayObject,
   vertPos: WebGLBuffer,
   texture: WebGLTexture,
   texCoords: WebGLBuffer,
@@ -56,8 +54,7 @@ export default async function loadMap(
   path: string,
   defaultShader: DefaultShader,
   skyboxShader: SkyboxShader,
-  colliderShader: ColliderShader,
-  pickingShader: PickingShader
+  colliderShader: ColliderShader
 ) {
   const res = await fetch(`maps/${path}`);
   const map = await res.json();
@@ -163,22 +160,8 @@ export default async function loadMap(
     const placements = map.objects[i].placement;
     placements.forEach((inst: any) => instances.push(new GameObject(inst.position, inst.rotation, inst.scale)));
 
-    const pickingVao = gl.createVertexArray();
-    gl.bindVertexArray(pickingVao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertPos);
-    gl.vertexAttribPointer(
-      pickingShader.attrib.vertPosition,
-      3,
-      gl.FLOAT,
-      false,
-      3 * Float32Array.BYTES_PER_ELEMENT,
-      0
-    );
-    gl.enableVertexAttribArray(pickingShader.attrib.vertPosition);
-
     objects.push({
       vao,
-      pickingVao,
       vertPos,
       texture,
       texCoords,

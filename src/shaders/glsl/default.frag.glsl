@@ -32,7 +32,6 @@ uniform int lightCount;
 uniform PointLight lights[5];
 
 uniform bool flashlightOn;
-uniform bool picked;
 uniform sampler2D smp;
 
 void main() {
@@ -85,10 +84,4 @@ void main() {
   vec4 unitFogColor = vec4(fogColor.x / 255.0, fogColor.y / 255.0, fogColor.z / 255.0, 1.0);
   outColor = vec4(texel.rgb * lightInt, texel.a);
   outColor = mix(unitFogColor, outColor, visibility);
-
-  // Picked highlight
-  if (picked) {
-    vec4 highlightColor = vec4(1.0, 1.0, 1.0, 1.0);
-    outColor = mix(outColor, highlightColor, 0.4);
-  }
 }

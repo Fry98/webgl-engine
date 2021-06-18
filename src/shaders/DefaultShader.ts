@@ -33,7 +33,6 @@ export default class DefaultShader extends Shader {
     flashAttenParams: WebGLUniformLocation,
     flashlightInnerCutoff: WebGLUniformLocation,
     flashlightOuterCutoff: WebGLUniformLocation,
-    picked: WebGLUniformLocation,
     lights: PointLight[]
   };
 
@@ -67,7 +66,6 @@ export default class DefaultShader extends Shader {
       flashAttenParams: gl.getUniformLocation(this.program, 'flashAttenParams'),
       flashlightInnerCutoff: gl.getUniformLocation(this.program, 'flashlightInnerCutoff'),
       flashlightOuterCutoff: gl.getUniformLocation(this.program, 'flashlightOuterCutoff'),
-      picked: gl.getUniformLocation(this.program, 'picked'),
       lights: this.getLightArray(gl, 5)
     };
   }

@@ -65,12 +65,12 @@ export default class Billboard {
     );
   }
 
-  draw(cam: Camera) {
+  draw(view: any) {
 
     // No Rotation Matrix
     const mWorld = mat4.create();
     mat4.translate(mWorld, mWorld, this.position);
-    const camPos = cam.getViewMatrix();
+    const camPos = view.transform.inverse.matrix;
     mat4.multiply(camPos, camPos, mWorld);
 
     const mNoRotation = mat4.fromValues(
@@ -79,7 +79,7 @@ export default class Billboard {
       0, 0, 1, camPos[11],
       camPos[12], camPos[13], camPos[14], camPos[15]
     );
-    mat4.multiply(mNoRotation, cam.getProjectionMatrix(), mNoRotation);
+    mat4.multiply(mNoRotation, view.projectionMatrix, mNoRotation);
 
     // Animation frame
     const frame = Math.round((performance.now() / 1000) * 17 * 1.8) % 18;

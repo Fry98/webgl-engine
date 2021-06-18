@@ -30,3 +30,19 @@
 .reload #canv {
   filter: blur(2px) grayscale(0.5);
 }
+
+#enter {
+  display: none;
+  font-size: 2em;
+  padding: 20px;
+  background: cornflowerblue;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition-duration: .2s;
+}
+
+#enter:hover {
+  background: rgb(79, 120, 197);
+}

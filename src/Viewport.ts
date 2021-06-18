@@ -1,5 +1,3 @@
-import { floor } from "gl-matrix/src/gl-matrix/vec2";
-
 export interface BufferObject {
   colorFrameBuffer: WebGLFramebuffer;
   colorBuffer: WebGLTexture;
